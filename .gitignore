@@ -1,19 +1,20 @@
-*.iml
-.kotlin
-.gradle
-**/build/
-xcuserdata
-!src/**/build/
+# Gradle and build output
+.gradle/
+build/
+.kotlin/
+
+# Local config (contains your SDK path)
 local.properties
-.idea
+
+# IDE files
+.idea/
+*.iml
+
+# macOS
 .DS_Store
-captures
-.externalNativeBuild
-.cxx
-*.xcodeproj/*
-!*.xcodeproj/project.pbxproj
-!*.xcodeproj/xcshareddata/
-!*.xcodeproj/project.xcworkspace/
-!*.xcworkspace/contents.xcworkspacedata
-**/xcshareddata/WorkspaceSettings.xcsettings
-node_modules/
+
+# Xcode / iOS
+xcuserdata/
+*.xcuserstate
+iosApp/Pods/
+DerivedData/

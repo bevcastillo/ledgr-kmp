@@ -35,18 +35,4 @@ class ExpenseListViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = ExpenseListUiState()
         )
-
-    @OptIn(ExperimentalTime::class)
-    fun addSampleExpense() {
-        viewModelScope.launch {
-            repository.addExpense(
-                Expense(
-                    title = "Coffee",
-                    amountCents = 15075,
-                    category = "Food",
-                    dateMillis = Clock.System.now().toEpochMilliseconds()
-                )
-            )
-        }
-    }
 }

@@ -24,14 +24,26 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun ExpenseListScreen(
+fun ExpenseListRoute(
+    onAddClick: () -> Unit,
     viewModel: ExpenseListViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    ExpenseListScreen(
+        state = state,
+        onAddClick = onAddClick
+    )
+}
+
+@Composable
+fun ExpenseListScreen(
+    state: ExpenseListUiState,
+    onAddClick: () -> Unit
+) {
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = viewModel::addSampleExpense) {
+            FloatingActionButton(onClick = onAddClick) {
                 Text("+")
             }
         }

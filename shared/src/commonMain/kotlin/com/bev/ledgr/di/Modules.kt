@@ -8,6 +8,7 @@ import com.bev.ledgr.ui.AddExpenseViewModel
 import com.bev.ledgr.ui.ExpenseListViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
@@ -19,7 +20,12 @@ val sharedModule = module {
     single { get<AppDatabase>().expenseDao() }
     single<ExpenseRepository> { ExpenseRepositoryImpl(get()) }
     viewModelOf(::ExpenseListViewModel)
-    viewModelOf(::AddExpenseViewModel)
+    viewModel { params ->
+        AddExpenseViewModel(
+            expenseId = params.getOrNull(),
+            repository = get()
+        )
+    }
 }
 
 fun initKoin(config: KoinAppDeclaration? = null) {

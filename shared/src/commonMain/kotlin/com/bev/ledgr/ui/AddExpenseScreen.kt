@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -25,11 +28,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun AddExpenseRoute(
+    expenseId: Long?,
     onDone: () -> Unit,
-    viewModel: AddExpenseViewModel = koinViewModel()
+    viewModel: AddExpenseViewModel = koinViewModel { parametersOf(expenseId) }
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -44,7 +49,8 @@ fun AddExpenseRoute(
         onCategoryChange = viewModel::onCategoryChange,
         onNoteChange = viewModel::onNoteChange,
         onSave = viewModel::onSave,
-        onBack = onDone
+        onBack = onDone,
+        onDelete = viewModel::onDelete
     )
 }
 
@@ -56,12 +62,13 @@ fun AddExpenseScreen(
     onCategoryChange: (String) -> Unit,
     onNoteChange: (String) -> Unit,
     onSave: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add expense") },
+                title = { Text(if (state.isEditing) "Edit expense" else "Add expense") },
                 navigationIcon = { TextButton(onClick = onBack) { Text("Cancel") } }
             )
         }
@@ -114,6 +121,17 @@ fun AddExpenseScreen(
             Spacer(Modifier.weight(1f))
             Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) {
                 Text("Save")
+            }
+            if (state.isEditing) {
+                OutlinedButton(
+                    onClick = onDelete,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Delete")
+                }
             }
         }
 

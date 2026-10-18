@@ -1,17 +1,17 @@
 package com.bev.ledgr.ui
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHost
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
 object ExpenseListDestination
 
 @Serializable
-object AddExpenseDestination
+data class ExpenseFormDestination(val expenseId: Long? = null)
 
 @Composable
 fun LedgrNavHost() {
@@ -23,11 +23,19 @@ fun LedgrNavHost() {
     ) {
         composable<ExpenseListDestination> {
             ExpenseListRoute(
-                onAddClick = { navController.navigate(AddExpenseDestination) }
+                onAddClick = {
+                    navController.navigate(ExpenseFormDestination())
+                    println("Ledgr: =====> should do something here")
+                },
+                onExpenseClick = {
+                    id -> navController.navigate(ExpenseFormDestination(expenseId = id))
+                }
             )
         }
-        composable<AddExpenseDestination> {
+        composable<ExpenseFormDestination> { backStackEntry ->
+            val destination = backStackEntry.toRoute<ExpenseFormDestination>()
             AddExpenseRoute(
+                expenseId = destination.expenseId,
                 onDone = { navController.popBackStack() }
             )
         }

@@ -26,19 +26,22 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ExpenseListRoute(
     onAddClick: () -> Unit,
+    onExpenseClick: (Long) -> Unit,
     viewModel: ExpenseListViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ExpenseListScreen(
         state = state,
-        onAddClick = onAddClick
+        onAddClick = onAddClick,
+        onExpenseClick = onExpenseClick
     )
 }
 
 @Composable
 fun ExpenseListScreen(
     state: ExpenseListUiState,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    onExpenseClick: (Long) -> Unit
 ) {
 
     Scaffold(
@@ -61,7 +64,10 @@ fun ExpenseListScreen(
             Spacer(Modifier.height(16.dp))
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(state.expenses, key = { it.id }) { expense ->
-                    Card(Modifier.fillMaxWidth()) {
+                    Card(
+                        onClick = { onExpenseClick(expense.id) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()

@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.math.exp
 import kotlin.time.Clock
 
 val Categories = listOf("Food", "Transport", "Bills", "Shopping", "Health", "Other")
@@ -20,15 +21,37 @@ data class AddExpenseUiState(
     val note: String = "",
     val titleError: String? = null,
     val amountError: String? = null,
-    val isSaved: Boolean = false
+    val isSaved: Boolean = false,
+    val isEditing: Boolean = false
 )
 
 class AddExpenseViewModel(
+    private val expenseId: Long?,
     private val repository: ExpenseRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AddExpenseUiState())
     val uiState: StateFlow<AddExpenseUiState> = _uiState.asStateFlow()
+
+    private var loadedExpense: Expense? = null
+
+    init {
+        if (expenseId != null) {
+            viewModelScope.launch {
+                val expense = repository.getExpense(expenseId) ?: return@launch
+                loadedExpense = expense
+                _uiState.update {
+                    it.copy(
+                        title = expense.title,
+                        amount = centsToInput(expense.amountCents),
+                        category = expense.category,
+                        note = expense.note.orEmpty(),
+                        isEditing = true
+                    )
+                }
+            }
+        }
+    }
 
     fun onTitleChange(value: String) =
         _uiState.update { it.copy(title = value, titleError = null) }
@@ -61,6 +84,7 @@ class AddExpenseViewModel(
         viewModelScope.launch {
             repository.addExpense(
                 Expense(
+                    id = loadedExpense?.id ?: 0,
                     title = state.title,
                     amountCents = cents!!,
                     category = state.category,
@@ -68,6 +92,14 @@ class AddExpenseViewModel(
                     note = state.note.trim().ifBlank { null }
                 )
             )
+            _uiState.update { it.copy(isSaved = true) }
+        }
+    }
+
+    fun onDelete() {
+        val expense = loadedExpense ?: return
+        viewModelScope.launch {
+            repository.deleteExpense(expense)
             _uiState.update { it.copy(isSaved = true) }
         }
     }
@@ -81,3 +113,7 @@ fun parseAmountToCents(input: String): Long? {
     val fraction = parts.getOrNull(1)?.padEnd(2, '0')?.toLong() ?: 0L
     return whole * 100 + fraction
 }
+
+// 15075 -> "150.75", for pre-filling the amount field
+fun centsToInput(cents: Long): String =
+    "${cents / 100}.${(cents % 100).toString().padStart(2, '0')}"

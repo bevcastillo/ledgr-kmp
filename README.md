@@ -1,31 +1,37 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# Ledgr
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+An offline-first expense tracker for **Android and iOS**, built with **Kotlin Multiplatform** and **Compose Multiplatform**. UI, logic, database, and navigation are fully shared.
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
+> 🚧 Work in progress
 
-### Running the apps
+## Features
 
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
+- Add, edit, and delete expenses with categories and notes
+- Running total, with form validation
+- Local storage that persists across restarts
 
-- Android app: `./gradlew :androidApp:assembleDebug`
-- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+## Tech stack
 
-### Running tests
+Kotlin · Compose Multiplatform · Material 3 · Room (KMP) · Koin · Navigation Compose with type-safe routes · Coroutines & Flow · KSP
 
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+## Architecture
 
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
+MVVM with a layered setup: **Compose UI → ViewModel (`StateFlow`) → Repository → Room DAO**.
 
----
+- One immutable UI state per screen, with stateful/stateless composables for easy previews
+- Money stored as `Long` cents to avoid floating-point errors
+- Platform-specific code limited to the database builder, via `expect`/`actual`
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+## Getting started
+
+Requires macOS, Android Studio with the Kotlin Multiplatform plugin, and Xcode.
+
+- **Android:** run the `androidApp` configuration
+- **iOS:** run the `iosApp` configuration, or open `iosApp/iosApp.xcodeproj` in Xcode
+
+## Roadmap
+
+- [ ] Unit tests
+- [ ] Monthly summary and charts
+- [ ] Adaptive layout for tablets
+- [ ] CI with GitHub Actions

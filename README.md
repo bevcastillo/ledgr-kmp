@@ -1,5 +1,7 @@
 # Ledgr
 
+![CI](https://github.com/bevcastillo/ledgr-kmp/actions/workflows/ci.yml/badge.svg)
+
 An offline-first expense tracker for **Android and iOS**, built with **Kotlin Multiplatform** and **Compose Multiplatform**. UI, logic, database, and navigation are fully shared.
 
 > 🚧 Work in progress

@@ -15,6 +15,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -27,13 +29,15 @@ import org.koin.compose.viewmodel.koinViewModel
 fun ExpenseListRoute(
     onAddClick: () -> Unit,
     onExpenseClick: (Long) -> Unit,
+    onSummaryClick: () -> Unit,
     viewModel: ExpenseListViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     ExpenseListScreen(
         state = state,
         onAddClick = onAddClick,
-        onExpenseClick = onExpenseClick
+        onExpenseClick = onExpenseClick,
+        onSummaryClick = onSummaryClick
     )
 }
 
@@ -41,10 +45,17 @@ fun ExpenseListRoute(
 fun ExpenseListScreen(
     state: ExpenseListUiState,
     onAddClick: () -> Unit,
-    onExpenseClick: (Long) -> Unit
+    onExpenseClick: (Long) -> Unit,
+    onSummaryClick: () -> Unit,
 ) {
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Ledgr") },
+                actions = { TextButton(onClick = onSummaryClick) { Text("Summary") } }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddClick) {
                 Text("+")

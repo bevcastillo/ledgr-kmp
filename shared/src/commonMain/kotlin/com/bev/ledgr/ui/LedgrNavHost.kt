@@ -13,6 +13,9 @@ object ExpenseListDestination
 @Serializable
 data class ExpenseFormDestination(val expenseId: Long? = null)
 
+@Serializable
+object SummaryDestination
+
 @Composable
 fun LedgrNavHost() {
     val navController = rememberNavController()
@@ -25,11 +28,11 @@ fun LedgrNavHost() {
             ExpenseListRoute(
                 onAddClick = {
                     navController.navigate(ExpenseFormDestination())
-                    println("Ledgr: =====> should do something here")
                 },
                 onExpenseClick = {
                     id -> navController.navigate(ExpenseFormDestination(expenseId = id))
-                }
+                },
+                onSummaryClick = { navController.navigate(SummaryDestination) }
             )
         }
         composable<ExpenseFormDestination> { backStackEntry ->
@@ -38,6 +41,9 @@ fun LedgrNavHost() {
                 expenseId = destination.expenseId,
                 onDone = { navController.popBackStack() }
             )
+        }
+        composable<SummaryDestination> {
+            SummaryRoute(onBack = { navController.popBackStack() } )
         }
     }
 }

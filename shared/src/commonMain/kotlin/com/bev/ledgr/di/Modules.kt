@@ -6,6 +6,7 @@ import com.bev.ledgr.data.ExpenseRepositoryImpl
 import com.bev.ledgr.data.getRoomDatabase
 import com.bev.ledgr.ui.AddExpenseViewModel
 import com.bev.ledgr.ui.ExpenseListViewModel
+import com.bev.ledgr.ui.SummaryViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
@@ -26,6 +27,7 @@ val sharedModule = module {
             repository = get()
         )
     }
+    viewModel { SummaryViewModel(repository = get()) }
 }
 
 fun initKoin(config: KoinAppDeclaration? = null) {

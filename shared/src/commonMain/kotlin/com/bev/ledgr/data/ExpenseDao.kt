@@ -19,4 +19,20 @@ interface ExpenseDao {
 
     @Query("SELECT * FROM expenses WHERE id = :id")
     suspend fun getById(id: Long): Expense?
+
+    @Query(
+        """
+            SELECT category, SUM(amountCents) AS totalCents
+            FROM expenses
+            WHERE dateMillis >= :startMillis AND dateMillis < :endMillis
+            GROUP by category
+            ORDER by totalCents DESC
+        """
+    )
+    fun observeCategoryTotals(startMillis: Long, endMillis: Long): Flow<List<CategoryTotal>>
 }
+
+data class CategoryTotal(
+    val category: String,
+    val totalCents: Long
+)

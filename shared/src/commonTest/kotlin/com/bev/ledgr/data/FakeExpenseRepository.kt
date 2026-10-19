@@ -2,6 +2,7 @@ package com.bev.ledgr.data
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
 class FakeExpenseRepository(
@@ -29,5 +30,13 @@ class FakeExpenseRepository(
 
     override suspend fun getExpense(id: Long): Expense? =
         expenses.value.find { it.id == id }
+
+    override fun observeCategoryTotals(startMillis: Long, endMillis: Long): Flow<List<CategoryTotal>> =
+        expenses.map { list ->
+            list.filter { it.dateMillis in startMillis..<endMillis }
+                .groupBy{ it.category }
+                .map { (category, items) -> CategoryTotal(category, items.sumOf { it.amountCents }) }
+                .sortedByDescending { it.totalCents }
+        }
 
 }

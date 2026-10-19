@@ -2,12 +2,6 @@ package com.bev.ledgr.ui
 
 import com.bev.ledgr.data.Expense
 import com.bev.ledgr.data.FakeExpenseRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -15,6 +9,12 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddExpenseViewModelTest {
@@ -59,8 +59,16 @@ class AddExpenseViewModelTest {
 
     @Test
     fun editMode_loadsExistingExpense() = runTest {
-        val existing = Expense(id = 7, title = "Coffee", amountCents = 15075, category = "Food", dateMillis = 1000)
-        val viewModel = AddExpenseViewModel(expenseId = 7, repository = FakeExpenseRepository(listOf(existing)))
+        val existing =
+            Expense(
+                id = 7,
+                title = "Coffee",
+                amountCents = 15075,
+                category = "Food",
+                dateMillis = 1000
+            )
+        val viewModel =
+            AddExpenseViewModel(expenseId = 7, repository = FakeExpenseRepository(listOf(existing)))
 
         val state = viewModel.uiState.value
         assertTrue(state.isEditing)
@@ -70,7 +78,14 @@ class AddExpenseViewModelTest {
 
     @Test
     fun editMode_save_updatesInsteadOfDuplicating() = runTest {
-        val existing = Expense(id = 7, title = "Coffee", amountCents = 15075, category = "Food", dateMillis = 1000)
+        val existing =
+            Expense(
+                id = 7,
+                title = "Coffee",
+                amountCents = 15075,
+                category = "Food",
+                dateMillis = 1000
+            )
         val repository = FakeExpenseRepository(listOf(existing))
         val viewModel = AddExpenseViewModel(expenseId = 7, repository = repository)
 
@@ -84,7 +99,14 @@ class AddExpenseViewModelTest {
 
     @Test
     fun delete_removeExpenses() = runTest {
-        val existing = Expense(id = 7, title = "Coffee", amountCents = 15075, category = "Food", dateMillis = 1000)
+        val existing =
+            Expense(
+                id = 7,
+                title = "Coffee",
+                amountCents = 15075,
+                category = "Food",
+                dateMillis = 1000
+            )
         val repository = FakeExpenseRepository(listOf(existing))
         val viewModel = AddExpenseViewModel(expenseId = 7, repository = repository)
 

@@ -46,9 +46,8 @@ fun ExpenseListScreen(
     state: ExpenseListUiState,
     onAddClick: () -> Unit,
     onExpenseClick: (Long) -> Unit,
-    onSummaryClick: () -> Unit,
+    onSummaryClick: () -> Unit
 ) {
-
     Scaffold(
         topBar = {
             TopAppBar(

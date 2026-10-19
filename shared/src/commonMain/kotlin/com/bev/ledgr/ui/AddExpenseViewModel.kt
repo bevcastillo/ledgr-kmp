@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bev.ledgr.data.Expense
 import com.bev.ledgr.data.ExpenseRepository
+import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
 
 val Categories = listOf("Food", "Transport", "Bills", "Shopping", "Health", "Other")
 
@@ -24,10 +24,8 @@ data class AddExpenseUiState(
     val isEditing: Boolean = false
 )
 
-class AddExpenseViewModel(
-    private val expenseId: Long?,
-    private val repository: ExpenseRepository
-) : ViewModel() {
+class AddExpenseViewModel(private val expenseId: Long?, private val repository: ExpenseRepository) :
+    ViewModel() {
 
     private val _uiState = MutableStateFlow(AddExpenseUiState())
     val uiState: StateFlow<AddExpenseUiState> = _uiState.asStateFlow()
@@ -52,17 +50,14 @@ class AddExpenseViewModel(
         }
     }
 
-    fun onTitleChange(value: String) =
-        _uiState.update { it.copy(title = value, titleError = null) }
+    fun onTitleChange(value: String) = _uiState.update { it.copy(title = value, titleError = null) }
 
     fun onAmountChange(value: String) =
         _uiState.update { it.copy(amount = value, amountError = null) }
 
-    fun onCategoryChange(value: String) =
-        _uiState.update { it.copy(category = value) }
+    fun onCategoryChange(value: String) = _uiState.update { it.copy(category = value) }
 
-    fun onNoteChange(value: String) =
-        _uiState.update { it.copy(note = value) }
+    fun onNoteChange(value: String) = _uiState.update { it.copy(note = value) }
 
     fun onSave() {
         val state = _uiState.value

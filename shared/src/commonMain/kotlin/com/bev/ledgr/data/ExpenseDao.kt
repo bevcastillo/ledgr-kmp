@@ -32,7 +32,4 @@ interface ExpenseDao {
     fun observeCategoryTotals(startMillis: Long, endMillis: Long): Flow<List<CategoryTotal>>
 }
 
-data class CategoryTotal(
-    val category: String,
-    val totalCents: Long
-)
+data class CategoryTotal(val category: String, val totalCents: Long)

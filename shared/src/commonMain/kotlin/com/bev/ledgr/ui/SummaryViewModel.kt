@@ -5,11 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.bev.ledgr.data.CategoryTotal
 import com.bev.ledgr.data.ExpenseRepository
 import com.bev.ledgr.data.monthRange
+import kotlin.time.Clock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flatMap
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.todayIn
-import kotlin.time.Clock
 
 data class SelectedMonth(val year: Int, val month: Int)
 
@@ -29,10 +28,8 @@ data class SummaryUiState(
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class SummaryViewModel(
-    private val repository: ExpenseRepository,
-    clock: Clock = Clock.System
-): ViewModel() {
+class SummaryViewModel(private val repository: ExpenseRepository, clock: Clock = Clock.System) :
+    ViewModel() {
 
     private val today = clock.todayIn(TimeZone.currentSystemDefault())
     private val selected = MutableStateFlow(SelectedMonth(today.year, today.month.number))

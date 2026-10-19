@@ -26,10 +26,7 @@ import kotlinx.datetime.Month
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun SummaryRoute(
-    onBack: () -> Unit,
-    viewModel: SummaryViewModel = koinViewModel()
-) {
+fun SummaryRoute(onBack: () -> Unit, viewModel: SummaryViewModel = koinViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     SummaryScreen(
         state = state,
@@ -86,10 +83,7 @@ fun SummaryScreen(
 }
 
 @Composable
-fun CategoryBarChart(
-    totals: List<CategoryTotal>,
-    modifier: Modifier = Modifier
-) {
+fun CategoryBarChart(totals: List<CategoryTotal>, modifier: Modifier = Modifier) {
     val max = totals.maxOf { it.totalCents }.toFloat()
     val barColor = MaterialTheme.colorScheme.primary
     val trackColor = MaterialTheme.colorScheme.surfaceVariant
@@ -114,7 +108,7 @@ fun CategoryBarChart(
                     drawRoundRect(
                         color = barColor,
                         size = Size(size.width * (item.totalCents / max), size.height),
-                        cornerRadius = radius,
+                        cornerRadius = radius
                     )
                 }
             }

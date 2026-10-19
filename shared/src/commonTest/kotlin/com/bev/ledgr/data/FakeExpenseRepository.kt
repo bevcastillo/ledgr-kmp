@@ -5,9 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
-class FakeExpenseRepository(
-    initial: List<Expense> = emptyList()
-) : ExpenseRepository {
+class FakeExpenseRepository(initial: List<Expense> = emptyList()) : ExpenseRepository {
     private val expenses = MutableStateFlow(initial)
     val current: List<Expense> get() = expenses.value
     private var nextId = (initial.maxOfOrNull { it.id } ?: 0) + 1
@@ -28,15 +26,17 @@ class FakeExpenseRepository(
         expenses.update { list -> list.filterNot { it.id == expense.id } }
     }
 
-    override suspend fun getExpense(id: Long): Expense? =
-        expenses.value.find { it.id == id }
+    override suspend fun getExpense(id: Long): Expense? = expenses.value.find { it.id == id }
 
-    override fun observeCategoryTotals(startMillis: Long, endMillis: Long): Flow<List<CategoryTotal>> =
-        expenses.map { list ->
-            list.filter { it.dateMillis in startMillis..<endMillis }
-                .groupBy{ it.category }
-                .map { (category, items) -> CategoryTotal(category, items.sumOf { it.amountCents }) }
-                .sortedByDescending { it.totalCents }
-        }
-
+    override fun observeCategoryTotals(
+        startMillis: Long,
+        endMillis: Long
+    ): Flow<List<CategoryTotal>> = expenses.map { list ->
+        list.filter { it.dateMillis in startMillis..<endMillis }
+            .groupBy { it.category }
+            .map { (category, items) ->
+                CategoryTotal(category, items.sumOf { it.amountCents })
+            }
+            .sortedByDescending { it.totalCents }
+    }
 }

@@ -10,9 +10,7 @@ interface ExpenseRepository {
     fun observeCategoryTotals(startMillis: Long, endMillis: Long): Flow<List<CategoryTotal>>
 }
 
-class ExpenseRepositoryImpl(
-    private val dao: ExpenseDao
-): ExpenseRepository {
+class ExpenseRepositoryImpl(private val dao: ExpenseDao) : ExpenseRepository {
     override fun observeExpenses(): Flow<List<Expense>> = dao.observeAll()
     override suspend fun addExpense(expense: Expense) = dao.upsert(expense)
     override suspend fun deleteExpense(expense: Expense) = dao.delete(expense)
@@ -20,6 +18,5 @@ class ExpenseRepositoryImpl(
     override fun observeCategoryTotals(
         startMillis: Long,
         endMillis: Long
-    ): Flow<List<CategoryTotal>> =
-        dao.observeCategoryTotals(startMillis, endMillis)
+    ): Flow<List<CategoryTotal>> = dao.observeCategoryTotals(startMillis, endMillis)
 }

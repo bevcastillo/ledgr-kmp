@@ -29,8 +29,8 @@ fun LedgrNavHost() {
                 onAddClick = {
                     navController.navigate(ExpenseFormDestination())
                 },
-                onExpenseClick = {
-                    id -> navController.navigate(ExpenseFormDestination(expenseId = id))
+                onExpenseClick = { id ->
+                    navController.navigate(ExpenseFormDestination(expenseId = id))
                 },
                 onSummaryClick = { navController.navigate(SummaryDestination) }
             )
@@ -43,7 +43,7 @@ fun LedgrNavHost() {
             )
         }
         composable<SummaryDestination> {
-            SummaryRoute(onBack = { navController.popBackStack() } )
+            SummaryRoute(onBack = { navController.popBackStack() })
         }
     }
 }

@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.math.exp
 import kotlin.time.Clock
 
 val Categories = listOf("Food", "Transport", "Bills", "Shopping", "Health", "Other")
@@ -85,10 +84,11 @@ class AddExpenseViewModel(
             repository.addExpense(
                 Expense(
                     id = loadedExpense?.id ?: 0,
-                    title = state.title,
+                    title = state.title.trim(),
                     amountCents = cents!!,
                     category = state.category,
-                    dateMillis = Clock.System.now().toEpochMilliseconds(),
+                    dateMillis = loadedExpense?.dateMillis
+                        ?: Clock.System.now().toEpochMilliseconds(),
                     note = state.note.trim().ifBlank { null }
                 )
             )

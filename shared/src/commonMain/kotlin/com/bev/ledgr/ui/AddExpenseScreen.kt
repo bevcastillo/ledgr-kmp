@@ -34,7 +34,11 @@ import org.koin.core.parameter.parametersOf
 fun AddExpenseRoute(
     expenseId: Long?,
     onDone: () -> Unit,
-    viewModel: AddExpenseViewModel = koinViewModel { parametersOf(expenseId) }
+    viewModelKey: String? = null,
+    viewModel: AddExpenseViewModel = koinViewModel(
+        key = viewModelKey,
+        parameters = { parametersOf(expenseId) }
+    )
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 

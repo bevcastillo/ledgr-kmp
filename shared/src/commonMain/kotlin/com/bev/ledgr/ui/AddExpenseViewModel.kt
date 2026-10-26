@@ -11,7 +11,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-val Categories = listOf("Food", "Transport", "Bills", "Shopping", "Health", "Other")
+val Categories = listOf(
+    "Food",
+    "Transport",
+    "Bills",
+    "Shopping",
+    "Health",
+    "Personal",
+    "Subscriptions",
+    "Credit card",
+    "Loans",
+    "Others"
+)
 
 data class AddExpenseUiState(
     val title: String = "",

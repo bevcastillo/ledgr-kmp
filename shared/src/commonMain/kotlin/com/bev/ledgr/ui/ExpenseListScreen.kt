@@ -51,7 +51,7 @@ fun ExpenseListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ledgr") },
+                title = { Text("Expenses") },
                 actions = { TextButton(onClick = onSummaryClick) { Text("Summary") } }
             )
         },

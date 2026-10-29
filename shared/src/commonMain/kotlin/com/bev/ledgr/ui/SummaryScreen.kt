@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bev.ledgr.data.CategoryTotal
@@ -70,11 +71,15 @@ fun SummaryScreen(
 
             Text(
                 text = "Total: ${formatCents(state.grandTotalCents)}",
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.labelLarge
             )
 
             if (state.totals.isEmpty()) {
-                Text("No expenses this month", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    "No expenses this month",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Black.copy(alpha = 0.5f)
+                )
             } else {
                 CategoryBarChart(totals = state.totals)
             }

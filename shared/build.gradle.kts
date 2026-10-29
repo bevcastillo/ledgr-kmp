@@ -65,6 +65,7 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.androidx.navigation.compose)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.compose.material.icons.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

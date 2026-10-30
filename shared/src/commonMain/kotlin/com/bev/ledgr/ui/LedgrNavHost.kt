@@ -5,16 +5,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.bev.ledgr.data.TransactionType
 import kotlinx.serialization.Serializable
 
 @Serializable
-object ExpenseListDestination
+object HomeDestination
 
 @Serializable
-data class ExpenseFormDestination(val expenseId: Long? = null)
+data class TransactionFormDestination(val expenseId: Long? = null, val type: String? = null)
 
 @Serializable
 object SummaryDestination
+
+// type = null means All Transactions for the selected month/year
+@Serializable
+data class TransactionListDestination(val type: String? = null, val year: Int, val month: Int)
 
 @Composable
 fun LedgrNavHost() {
@@ -22,26 +27,46 @@ fun LedgrNavHost() {
 
     NavHost(
         navController = navController,
-        startDestination = ExpenseListDestination
+        startDestination = HomeDestination
     ) {
-        composable<ExpenseListDestination> {
+        composable<HomeDestination> {
             ExpenseListDetail(
-                onAddClickCompact = { navController.navigate(ExpenseFormDestination()) },
-                onExpenseListCompact = { id ->
-                    navController.navigate(ExpenseFormDestination(expenseId = id))
+                onAddClickCompact = { type ->
+                    navController.navigate(TransactionFormDestination(type = type.name))
                 },
-                onSummaryClick = { navController.navigate(SummaryDestination) }
+                onExpenseListCompact = { id ->
+                    navController.navigate(TransactionFormDestination(expenseId = id))
+                },
+                onSummaryClick = { navController.navigate(SummaryDestination) },
+                onTransactionClick = { type, year, month ->
+                    navController.navigate(
+                        TransactionListDestination(type = type?.name, year = year, month = month)
+                    )
+                }
             )
         }
-        composable<ExpenseFormDestination> { backStackEntry ->
-            val destination = backStackEntry.toRoute<ExpenseFormDestination>()
-            AddExpenseRoute(
-                expenseId = destination.expenseId,
+        composable<TransactionFormDestination> { backStackEntry ->
+            val destination = backStackEntry.toRoute<TransactionFormDestination>()
+            AddTransactionRoute(
+                transactionId = destination.expenseId,
+                type = destination.type?.let { TransactionType.valueOf(it) },
                 onDone = { navController.popBackStack() }
             )
         }
         composable<SummaryDestination> {
             SummaryRoute(onBack = { navController.popBackStack() })
+        }
+        composable<TransactionListDestination> { backStackEntry ->
+            val destination = backStackEntry.toRoute<TransactionListDestination>()
+            TransactionListRoute(
+                type = destination.type?.let { TransactionType.valueOf(it) },
+                year = destination.year,
+                month = destination.month,
+                onTransactionClick = { id ->
+                    navController.navigate(TransactionFormDestination(expenseId = id))
+                },
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

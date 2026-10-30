@@ -2,8 +2,9 @@ package com.bev.ledgr.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bev.ledgr.data.Expense
 import com.bev.ledgr.data.ExpenseRepository
+import com.bev.ledgr.data.Transaction
+import com.bev.ledgr.data.TransactionType
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,48 +14,60 @@ import kotlinx.coroutines.launch
 
 val Categories = listOf(
     "Food",
+    "Groceries",
     "Transport",
     "Bills",
+    "Education",
     "Shopping",
+    "Personal care",
+    "Family",
     "Health",
-    "Personal",
-    "Subscriptions",
-    "Credit card",
-    "Loans",
+    "Entertainment",
+    "Debt payments",
+    "Pets",
     "Others"
 )
 
-data class AddExpenseUiState(
+data class AddTransactionUiState(
     val title: String = "",
     val amount: String = "",
     val category: String = Categories.first(),
     val note: String = "",
+    val dateMillis: Long = Clock.System.now().toEpochMilliseconds(),
     val titleError: String? = null,
     val amountError: String? = null,
     val isSaved: Boolean = false,
-    val isEditing: Boolean = false
+    val isEditing: Boolean = false,
+    val type: TransactionType = TransactionType.EXPENSE
 )
 
-class AddExpenseViewModel(private val expenseId: Long?, private val repository: ExpenseRepository) :
-    ViewModel() {
+class AddTransactionViewModel(
+    private val expenseId: Long?,
+    private val repository: ExpenseRepository,
+    type: TransactionType?
+) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AddExpenseUiState())
-    val uiState: StateFlow<AddExpenseUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(
+        AddTransactionUiState(type = type ?: TransactionType.EXPENSE)
+    )
+    val uiState: StateFlow<AddTransactionUiState> = _uiState.asStateFlow()
 
-    private var loadedExpense: Expense? = null
+    private var loadedTransaction: Transaction? = null
 
     init {
         if (expenseId != null) {
             viewModelScope.launch {
-                val expense = repository.getExpense(expenseId) ?: return@launch
-                loadedExpense = expense
+                val transaction = repository.getExpense(expenseId) ?: return@launch
+                loadedTransaction = transaction
                 _uiState.update {
                     it.copy(
-                        title = expense.title,
-                        amount = centsToInput(expense.amountCents),
-                        category = expense.category,
-                        note = expense.note.orEmpty(),
-                        isEditing = true
+                        title = transaction.title,
+                        amount = centsToInput(transaction.amountCents),
+                        category = transaction.category,
+                        note = transaction.note.orEmpty(),
+                        dateMillis = transaction.dateMillis,
+                        isEditing = true,
+                        type = transaction.type
                     )
                 }
             }
@@ -70,14 +83,16 @@ class AddExpenseViewModel(private val expenseId: Long?, private val repository: 
 
     fun onNoteChange(value: String) = _uiState.update { it.copy(note = value) }
 
+    fun onDateChange(value: Long) = _uiState.update { it.copy(dateMillis = value) }
+
     fun onSave() {
         val state = _uiState.value
         val cents = parseAmountToCents(state.amount)
 
         val titleError = if (state.title.isBlank()) "Enter a title" else null
-        val amountError = when {
-            cents == null -> "Enter a valid amount, like 150 or 150.75"
-            cents == 0L -> "Amount must be more than zero"
+        val amountError = when (cents) {
+            null -> "Enter a valid amount, like 150 or 150.75"
+            0L -> "Amount must be more than zero"
             else -> null
         }
 
@@ -88,14 +103,14 @@ class AddExpenseViewModel(private val expenseId: Long?, private val repository: 
 
         viewModelScope.launch {
             repository.addExpense(
-                Expense(
-                    id = loadedExpense?.id ?: 0,
+                Transaction(
+                    id = loadedTransaction?.id ?: 0,
                     title = state.title.trim(),
                     amountCents = cents!!,
                     category = state.category,
-                    dateMillis = loadedExpense?.dateMillis
-                        ?: Clock.System.now().toEpochMilliseconds(),
-                    note = state.note.trim().ifBlank { null }
+                    dateMillis = state.dateMillis,
+                    note = state.note.trim().ifBlank { null },
+                    type = state.type
                 )
             )
             _uiState.update { it.copy(isSaved = true) }
@@ -103,7 +118,7 @@ class AddExpenseViewModel(private val expenseId: Long?, private val repository: 
     }
 
     fun onDelete() {
-        val expense = loadedExpense ?: return
+        val expense = loadedTransaction ?: return
         viewModelScope.launch {
             repository.deleteExpense(expense)
             _uiState.update { it.copy(isSaved = true) }

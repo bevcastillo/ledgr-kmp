@@ -2,8 +2,9 @@ package com.bev.ledgr.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bev.ledgr.data.Expense
 import com.bev.ledgr.data.ExpenseRepository
+import com.bev.ledgr.data.Transaction
+import com.bev.ledgr.data.TransactionType
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,14 +22,15 @@ import kotlinx.datetime.todayIn
 private val AllMonths = (1..12).toList()
 
 data class ExpenseListUiState(
-    val expenses: List<Expense> = emptyList(),
-    val totalCents: Long = 0,
+    val transactions: List<Transaction> = emptyList(),
+    val totalExpenseCents: Long = 0,
     val totalIncomeCents: Long = 0,
     val isLoading: Boolean = true,
     val selectedYear: Int,
     val selectedMonth: Int,
     val availableYears: List<Int> = listOf(selectedYear),
-    val availableMonths: List<Int> = (1..selectedMonth).toList()
+    val availableMonths: List<Int> = (1..selectedMonth).toList(),
+    val type: TransactionType = TransactionType.EXPENSE
 )
 
 class ExpenseListViewModel(
@@ -43,21 +45,30 @@ class ExpenseListViewModel(
     private val selection = MutableStateFlow(SelectedMonth(currentYear, currentMonth))
 
     val uiState: StateFlow<ExpenseListUiState> =
-        combine(repository.observeExpenses(), selection) { allExpenses, selected ->
-            val oldestYear = allExpenses.minOfOrNull { dateOf(it).year } ?: currentYear
+        combine(repository.observeExpenses(), selection) { allTransactions, selected ->
+            val oldestYear = allTransactions.minOfOrNull { dateOf(it).year } ?: currentYear
             val availableYears = (minOf(oldestYear, currentYear)..currentYear).toList().reversed()
             val availableMonths: List<Int> = AllMonths
 
-            val expensesInMonth =
-                allExpenses.filter { expense ->
-                    val date = dateOf(expense)
+            val transactionsInMonth =
+                allTransactions.filter { transaction ->
+                    val date = dateOf(transaction)
                     date.year == selected.year && date.month.number == selected.month
                 }
 
+            // Sum of each transaction type
+            val totalExpenseCents = transactionsInMonth
+                .filter { it.type == TransactionType.EXPENSE }
+                .sumOf { it.amountCents }
+
+            val totalIncomeCents = transactionsInMonth
+                .filter { it.type == TransactionType.INCOME }
+                .sumOf { it.amountCents }
+
             ExpenseListUiState(
-                expenses = expensesInMonth,
-                totalCents = expensesInMonth.sumOf { it.amountCents },
-                totalIncomeCents = 0,
+                transactions = transactionsInMonth,
+                totalExpenseCents = totalExpenseCents,
+                totalIncomeCents = totalIncomeCents,
                 isLoading = false,
                 selectedYear = selected.year,
                 selectedMonth = selected.month,
@@ -82,6 +93,6 @@ class ExpenseListViewModel(
         selection.update { it.copy(month = month) }
     }
 
-    private fun dateOf(expense: Expense): LocalDate =
-        Instant.fromEpochMilliseconds(expense.dateMillis).toLocalDateTime(timeZone).date
+    private fun dateOf(transaction: Transaction): LocalDate =
+        Instant.fromEpochMilliseconds(transaction.dateMillis).toLocalDateTime(timeZone).date
 }

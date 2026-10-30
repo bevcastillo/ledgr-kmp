@@ -5,28 +5,28 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
-class FakeExpenseRepository(initial: List<Expense> = emptyList()) : ExpenseRepository {
+class FakeExpenseRepository(initial: List<Transaction> = emptyList()) : ExpenseRepository {
     private val expenses = MutableStateFlow(initial)
-    val current: List<Expense> get() = expenses.value
+    val current: List<Transaction> get() = expenses.value
     private var nextId = (initial.maxOfOrNull { it.id } ?: 0) + 1
 
-    override fun observeExpenses(): Flow<List<Expense>> = expenses
+    override fun observeExpenses(): Flow<List<Transaction>> = expenses
 
-    override suspend fun addExpense(expense: Expense) {
+    override suspend fun addExpense(transaction: Transaction) {
         expenses.update { list ->
-            if (expense.id != 0L && list.any { it.id == expense.id }) {
-                list.map { if (it.id == expense.id) expense else it }
+            if (transaction.id != 0L && list.any { it.id == transaction.id }) {
+                list.map { if (it.id == transaction.id) transaction else it }
             } else {
-                list + expense.copy(id = nextId++)
+                list + transaction.copy(id = nextId++)
             }
         }
     }
 
-    override suspend fun deleteExpense(expense: Expense) {
-        expenses.update { list -> list.filterNot { it.id == expense.id } }
+    override suspend fun deleteExpense(transaction: Transaction) {
+        expenses.update { list -> list.filterNot { it.id == transaction.id } }
     }
 
-    override suspend fun getExpense(id: Long): Expense? = expenses.value.find { it.id == id }
+    override suspend fun getExpense(id: Long): Transaction? = expenses.value.find { it.id == id }
 
     override fun observeCategoryTotals(
         startMillis: Long,

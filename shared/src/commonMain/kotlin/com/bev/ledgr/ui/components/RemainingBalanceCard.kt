@@ -13,14 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.bev.ledgr.ui.formatCents
 import com.bev.ledgr.ui.theme.primaryColor
 
 @Composable
-fun RemainingBalanceCard(incomeCents: Long, expensesCents: Long, modifier: Modifier = Modifier) {
-    val remainingBalance = formatCents(incomeCents - expensesCents)
+fun RemainingBalanceCard(remainingBalance: String) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)
+        modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)
     ) {
         Column(
             modifier = Modifier.weight(1f)

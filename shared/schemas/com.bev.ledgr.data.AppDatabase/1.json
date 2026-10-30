@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "f7470bae58dc4958fef3460dc28d8582",
+    "identityHash": "46053f9904f771f44fd53ebf5ce9835e",
     "entities": [
       {
-        "tableName": "expenses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `amountCents` INTEGER NOT NULL, `category` TEXT NOT NULL, `dateMillis` INTEGER NOT NULL, `note` TEXT)",
+        "tableName": "transactions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `amountCents` INTEGER NOT NULL, `category` TEXT NOT NULL, `dateMillis` INTEGER NOT NULL, `note` TEXT, `type` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -42,6 +42,12 @@
             "fieldPath": "note",
             "columnName": "note",
             "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -54,7 +60,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f7470bae58dc4958fef3460dc28d8582')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '46053f9904f771f44fd53ebf5ce9835e')"
     ]
   }
 }

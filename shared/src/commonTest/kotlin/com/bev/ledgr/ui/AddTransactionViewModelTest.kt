@@ -1,7 +1,7 @@
 package com.bev.ledgr.ui
 
-import com.bev.ledgr.data.Expense
 import com.bev.ledgr.data.FakeExpenseRepository
+import com.bev.ledgr.data.Transaction
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -17,7 +17,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class AddExpenseViewModelTest {
+class AddTransactionViewModelTest {
 
     @BeforeTest
     fun setUp() {
@@ -32,7 +32,7 @@ class AddExpenseViewModelTest {
     @Test
     fun save_withEmptyFields_showsErrorsAndDoesNotSave() = runTest {
         val repository = FakeExpenseRepository()
-        val viewModel = AddExpenseViewModel(expenseId = null, repository = repository)
+        val viewModel = AddTransactionViewModel(expenseId = null, repository = repository)
 
         viewModel.onSave()
 
@@ -46,7 +46,7 @@ class AddExpenseViewModelTest {
     @Test
     fun save_withValidInput_addsExpense() = runTest {
         val repository = FakeExpenseRepository()
-        val viewModel = AddExpenseViewModel(expenseId = null, repository = repository)
+        val viewModel = AddTransactionViewModel(expenseId = null, repository = repository)
 
         viewModel.onTitleChange("Lunch")
         viewModel.onAmountChange("150.75")
@@ -60,7 +60,7 @@ class AddExpenseViewModelTest {
     @Test
     fun editMode_loadsExistingExpense() = runTest {
         val existing =
-            Expense(
+            Transaction(
                 id = 7,
                 title = "Coffee",
                 amountCents = 15075,
@@ -68,7 +68,10 @@ class AddExpenseViewModelTest {
                 dateMillis = 1000
             )
         val viewModel =
-            AddExpenseViewModel(expenseId = 7, repository = FakeExpenseRepository(listOf(existing)))
+            AddTransactionViewModel(
+                expenseId = 7,
+                repository = FakeExpenseRepository(listOf(existing))
+            )
 
         val state = viewModel.uiState.value
         assertTrue(state.isEditing)
@@ -79,7 +82,7 @@ class AddExpenseViewModelTest {
     @Test
     fun editMode_save_updatesInsteadOfDuplicating() = runTest {
         val existing =
-            Expense(
+            Transaction(
                 id = 7,
                 title = "Coffee",
                 amountCents = 15075,
@@ -87,7 +90,7 @@ class AddExpenseViewModelTest {
                 dateMillis = 1000
             )
         val repository = FakeExpenseRepository(listOf(existing))
-        val viewModel = AddExpenseViewModel(expenseId = 7, repository = repository)
+        val viewModel = AddTransactionViewModel(expenseId = 7, repository = repository)
 
         viewModel.onAmountChange("200")
         viewModel.onSave()
@@ -100,7 +103,7 @@ class AddExpenseViewModelTest {
     @Test
     fun delete_removeExpenses() = runTest {
         val existing =
-            Expense(
+            Transaction(
                 id = 7,
                 title = "Coffee",
                 amountCents = 15075,
@@ -108,7 +111,7 @@ class AddExpenseViewModelTest {
                 dateMillis = 1000
             )
         val repository = FakeExpenseRepository(listOf(existing))
-        val viewModel = AddExpenseViewModel(expenseId = 7, repository = repository)
+        val viewModel = AddTransactionViewModel(expenseId = 7, repository = repository)
 
         viewModel.onDelete()
 

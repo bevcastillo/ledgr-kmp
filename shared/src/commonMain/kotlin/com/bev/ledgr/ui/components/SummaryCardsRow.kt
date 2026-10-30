@@ -22,18 +22,26 @@ import com.bev.ledgr.ui.formatCents
 import com.bev.ledgr.ui.theme.primaryColor
 
 @Composable
-fun SummaryCardsRow(incomeCents: Long, expensesCents: Long, modifier: Modifier = Modifier) {
+fun SummaryCardsRow(
+    incomeCents: Long,
+    expensesCents: Long,
+    onIncomeClick: () -> Unit,
+    onExpensesClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         SummaryCard(
             label = "Total Income",
+            onClick = onIncomeClick,
             amountCents = incomeCents,
             modifier = Modifier.weight(1f)
         )
         SummaryCard(
             label = "Total Expenses",
+            onClick = onExpensesClick,
             amountCents = expensesCents,
             modifier = Modifier.weight(1f)
         )
@@ -41,8 +49,9 @@ fun SummaryCardsRow(incomeCents: Long, expensesCents: Long, modifier: Modifier =
 }
 
 @Composable
-private fun SummaryCard(label: String, amountCents: Long, modifier: Modifier) {
+private fun SummaryCard(label: String, amountCents: Long, onClick: () -> Unit, modifier: Modifier) {
     Card(
+        onClick = onClick,
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         colors =

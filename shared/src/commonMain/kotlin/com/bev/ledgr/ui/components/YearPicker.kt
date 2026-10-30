@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.bev.ledgr.ui.theme.primaryColor
 import ledgr.shared.generated.resources.Res
@@ -38,7 +39,8 @@ fun YearPicker(
             Text(
                 text = selectedYear.toString(),
                 style = MaterialTheme.typography.titleMedium,
-                color = primaryColor
+                color = primaryColor,
+                fontWeight = FontWeight.SemiBold
             )
             Spacer(Modifier.width(4.dp))
             Icon(

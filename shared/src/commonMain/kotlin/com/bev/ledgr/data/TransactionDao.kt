@@ -7,23 +7,23 @@ import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ExpenseDao {
+interface TransactionDao {
     @Upsert
-    suspend fun upsert(expense: Expense)
+    suspend fun upsert(transaction: Transaction)
 
     @Delete
-    suspend fun delete(expense: Expense)
+    suspend fun delete(transaction: Transaction)
 
-    @Query("SELECT * FROM expenses ORDER BY dateMillis DESC")
-    fun observeAll(): Flow<List<Expense>>
+    @Query("SELECT * FROM transactions ORDER BY dateMillis DESC")
+    fun observeAll(): Flow<List<Transaction>>
 
-    @Query("SELECT * FROM expenses WHERE id = :id")
-    suspend fun getById(id: Long): Expense?
+    @Query("SELECT * FROM transactions WHERE id = :id")
+    suspend fun getById(id: Long): Transaction?
 
     @Query(
         """
             SELECT category, SUM(amountCents) AS totalCents
-            FROM expenses
+            FROM transactions
             WHERE dateMillis >= :startMillis AND dateMillis < :endMillis
             GROUP by category
             ORDER by totalCents DESC

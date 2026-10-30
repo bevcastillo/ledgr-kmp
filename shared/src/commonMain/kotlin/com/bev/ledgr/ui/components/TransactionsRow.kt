@@ -47,7 +47,11 @@ private fun styleFor(transaction: Transaction): RowCategoryStyle =
     }
 
 @Composable
-fun TransactionsRow(transaction: Transaction, onClick: () -> Unit) {
+fun TransactionsRow(
+    transaction: Transaction,
+    onClick: () -> Unit,
+    showDivider: Boolean = true
+) {
     val style = styleFor(transaction)
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -55,7 +59,7 @@ fun TransactionsRow(transaction: Transaction, onClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
-                .padding(vertical = 16.dp),
+                .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CategoryIconCircle(icon = style.icon, color = style.color)
@@ -90,10 +94,12 @@ fun TransactionsRow(transaction: Transaction, onClick: () -> Unit) {
             )
         }
 
-        HorizontalDivider(
-            thickness = 0.5.dp,
-            color = MaterialTheme.colorScheme.outlineVariant
-        )
+        if (showDivider) {
+            HorizontalDivider(
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+        }
     }
 }
 

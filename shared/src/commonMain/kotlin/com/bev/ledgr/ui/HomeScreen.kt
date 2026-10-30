@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowRightAlt
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -95,13 +97,14 @@ fun HomeScreen(
         FabMenuItem(label = "Add expense", onClick = { onAddClick(TransactionType.EXPENSE) }),
         FabMenuItem(label = "Add income", onClick = { onAddClick(TransactionType.INCOME) })
     )
+    val recentTransactions = state.transactions.take(RECENT_TRANSACTION_LIMIT)
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Expenses",
+                        text = "Home",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -178,7 +181,7 @@ fun HomeScreen(
                     remainingBalance = formatCents(remainingBalance)
                 )
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(8.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -204,7 +207,7 @@ fun HomeScreen(
                     }
                 }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(8.dp))
 
                 when {
                     state.isLoading -> {
@@ -225,12 +228,12 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(state.transactions.take(RECENT_TRANSACTION_LIMIT), key = {
-                                it.id
-                            }) { transaction ->
+                            itemsIndexed(recentTransactions, key = { _, transaction -> transaction.id}) {
+                                index, transaction ->
                                 TransactionsRow(
                                     transaction = transaction,
-                                    onClick = { onTransactionItemClick(transaction.id) }
+                                    onClick = { onTransactionItemClick(transaction.id) },
+                                    showDivider = index < recentTransactions.lastIndex
                                 )
                             }
 

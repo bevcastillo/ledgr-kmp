@@ -1,5 +1,6 @@
 package com.bev.ledgr.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,8 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -36,6 +38,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bev.ledgr.data.TransactionType
 import com.bev.ledgr.ui.components.TransactionsRow
 import com.bev.ledgr.ui.theme.primaryLight
+import ledgr.shared.generated.resources.Res
+import ledgr.shared.generated.resources.receipt_peso
+import ledgr.shared.generated.resources.wallet_peso
+import org.jetbrains.compose.resources.DrawableResource
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -79,12 +86,11 @@ fun TransactionListScreen(
         TransactionType.INCOME -> "Total Income"
         null -> "Remaining Balance"
     }
-
-    val cardCents: Long = when (type) {
-        TransactionType.EXPENSE -> state.totalExpenseCents
-        TransactionType.INCOME -> state.totalIncomeCents
-        null -> state.totalIncomeCents - state.totalExpenseCents
-    }
+    
+    val cardCents: String = formatCents(
+        if (type == TransactionType.INCOME) state.totalIncomeCents
+        else state.totalExpenseCents
+    )
 
     val transactions = remember(state.transactions, type) {
         if (type == null) {
@@ -134,10 +140,10 @@ fun TransactionListScreen(
                             containerColor = primaryLight
                         )
                 ) {
-                    Row(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Column(
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .weight(1f)
                                 .padding(horizontal = 16.dp, vertical = 20.dp)
                         ) {
                             Text(
@@ -147,7 +153,7 @@ fun TransactionListScreen(
                             )
                             Spacer(Modifier.height(8.dp))
                             Text(
-                                text = formatCents(state.totalIncomeCents),
+                                text = cardCents,
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
@@ -160,6 +166,16 @@ fun TransactionListScreen(
                                 color = Color.Black.copy(alpha = 0.6f)
                             )
                         }
+
+                        val drawableImage: DrawableResource =
+                            if (type == TransactionType.EXPENSE) Res.drawable.receipt_peso
+                            else Res.drawable.wallet_peso
+
+                        Image(
+                            painter = painterResource(drawableImage),
+                            contentDescription = null,
+                            modifier = Modifier.size(100.dp)
+                        )
                     }
                 }
             }
@@ -180,10 +196,12 @@ fun TransactionListScreen(
                 }
                 else -> {
                     LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                        items(transactions, key = { it.id }) { transaction ->
+                        itemsIndexed(transactions, key = { _, transaction -> transaction.id}) {
+                                index, transaction ->
                             TransactionsRow(
                                 transaction = transaction,
-                                onClick = { onTransactionClick(transaction.id) }
+                                onClick = { onTransactionClick(transaction.id) },
+                                showDivider = index < transactions.lastIndex
                             )
                         }
                     }

@@ -5,10 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -19,13 +17,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -40,7 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,16 +52,21 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.CategoryTotal
+import com.bev.ledgr.ui.components.CategoryIconCircle
+import com.bev.ledgr.ui.components.MonthSelector
 import com.bev.ledgr.ui.components.color
+import com.bev.ledgr.ui.components.icon
 import com.bev.ledgr.ui.theme.primaryColor
+import com.bev.ledgr.ui.theme.primaryDark
 import org.koin.compose.viewmodel.koinViewModel
+
+private val AllMonths = (1..12).toList()
 
 @Composable
 fun SummaryRoute(
@@ -145,63 +143,63 @@ fun SummaryScreen(
                 Spacer(Modifier.height(24.dp))
                 MonthSelector(
                     selectedMonth = state.month,
-                    onMonthSelect = onMonthSelect
+                    availableMonths = AllMonths,
+                    onMonthSelected = onMonthSelect
                 )
-            }
-
-            Spacer(Modifier.height(32.dp))
-            SpendingDonut(
-                totals = state.totals,
-                modifier = Modifier.fillMaxWidth(0.66f)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = formatPeso(state.grandTotalCents),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "spent",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Spacer(Modifier.height(32.dp))
+                SpendingDonut(
+                    totals = state.totals,
+                    modifier = Modifier.fillMaxWidth(0.66f)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = formatPeso(state.grandTotalCents),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "spent",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
-            }
 
-            Spacer(Modifier.height(32.dp))
-            Text(
-                text = "See all transactions",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    textDecoration = TextDecoration.Underline
-                ),
-                fontWeight = FontWeight.Medium,
-                color = primaryColor,
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(end = 20.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .clickable(role = Role.Button, onClick = onSeeAllTransactions)
-                    .padding(4.dp)
-            )
-
-            Spacer(Modifier.height(8.dp))
-            if (state.totals.isEmpty()) {
+                Spacer(Modifier.height(32.dp))
                 Text(
-                    text = "No expenses for thie period",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(vertical = 32.dp)
+                    text = "See all transactions",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        textDecoration = TextDecoration.Underline
+                    ),
+                    fontWeight = FontWeight.Medium,
+                    color = primaryColor,
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable(role = Role.Button, onClick = onSeeAllTransactions)
+                        .padding(4.dp)
                 )
-            } else {
-                state.totals.forEach { item ->
-                    CategoryRow(
-                        item = item,
-                        onClick = { onCategoryClick(item.category) }
+
+                Spacer(Modifier.height(8.dp))
+                if (state.totals.isEmpty()) {
+                    Text(
+                        text = "No expenses for thie period",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 32.dp)
                     )
+                } else {
+                    state.totals.forEach { item ->
+                        CategoryRow(
+                            item = item,
+                            onClick = { onCategoryClick(item.category) },
+                            showDivider = state.totals.indexOf(item) < state.totals.lastIndex
+                        )
+                    }
                 }
+                Spacer(Modifier.height(24.dp))
             }
-            Spacer(Modifier.height(24.dp))
         }
     }
 }
@@ -281,7 +279,7 @@ private fun YearSelector(year: Int, years: List<Int>, onYearSelect: (Int) -> Uni
 private fun PeriodToggle(selected: SummaryPeriod, onSelect: (SummaryPeriod) -> Unit) {
     Row(
         modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(primaryColor.copy(0.15f))
             .height(IntrinsicSize.Min)
             .selectableGroup(),
@@ -292,22 +290,22 @@ private fun PeriodToggle(selected: SummaryPeriod, onSelect: (SummaryPeriod) -> U
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .padding(vertical = 8.dp)
+                        .padding(vertical = 10.dp)
                         .width(1.dp)
-                        .background(primaryColor.copy(alpha = 0.4f))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                 )
             }
 
             val isSelected = period == selected
             Text(
                 text = period.name,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                 color = if (isSelected) {
-                    primaryColor
+                    primaryDark
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                        alpha = 0.5f
+                        alpha = 0.6f
                     )
                 },
                 modifier = Modifier
@@ -316,68 +314,8 @@ private fun PeriodToggle(selected: SummaryPeriod, onSelect: (SummaryPeriod) -> U
                         role = Role.Tab,
                         onClick = { onSelect(period) }
                     )
+                    .padding(horizontal = 28.dp, vertical = 12.dp)
             )
-        }
-    }
-}
-
-@Composable
-private fun MonthSelector(selectedMonth: Int, onMonthSelect: (Int) -> Unit) {
-    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-        val itemWidth = maxWidth / 3
-        val listState = rememberLazyListState(initialFirstVisibleItemIndex = selectedMonth - 1)
-
-        LaunchedEffect(selectedMonth) {
-            listState.animateScrollToItem(selectedMonth - 1)
-        }
-
-        LazyRow(
-            state = listState,
-            contentPadding = PaddingValues(horizontal = itemWidth),
-            modifier = Modifier.selectableGroup()
-        ) {
-            items((1..12).toList()) { month ->
-                val isSelected = month == selectedMonth
-                Box(
-                    modifier = Modifier
-                        .width(itemWidth)
-                        .padding(horizontal = 6.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = monthName(month),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (isSelected) {
-                            primaryColor
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(
-                                alpha = 0.5f
-                            )
-                        },
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(
-                                if (isSelected) {
-                                    primaryColor.copy(
-                                        alpha = 0.15f
-                                    )
-                                } else {
-                                    Color.Transparent
-                                }
-                            )
-                            .selectable(
-                                selected = isSelected,
-                                role = Role.Tab,
-                                onClick = { onMonthSelect(month) }
-                            )
-                            .padding(vertical = 12.dp)
-                    )
-                }
-            }
         }
     }
 }
@@ -442,57 +380,67 @@ private fun SpendingDonut(
 }
 
 @Composable
-private fun CategoryRow(item: CategoryTotal, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = 24.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
+private fun CategoryRow(
+    item: CategoryTotal,
+    onClick: () -> Unit,
+    showDivider: Boolean
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
             modifier = Modifier
-                .size(52.dp)
-                .clip(CircleShape)
-                .background(item.category.color)
-        )
-        Spacer(Modifier.width(20.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Row(
-                modifier = Modifier.padding(vertical = 20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                .fillMaxWidth()
+                .clickable(role = Role.Button, onClick = onClick)
+                .padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CategoryIconCircle(
+                icon = item.category.icon,
+                color = item.category.color
+            )
+            Spacer(Modifier.width(20.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.padding(vertical = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = item.category.displayName(),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = transactionLabel(item.transactionCount),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    }
                     Text(
-                        text = item.category.displayName(),
+                        text = formatPeso(item.totalCents),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
-                        text = transactionLabel(item.transactionCount),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.7f)
+                    Spacer(Modifier.width(16.dp))
+                    Chevron(
+                        direction = ChevronDirection.Right,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        modifier = Modifier.size(width = 8.dp, height = 14.dp)
                     )
                 }
-                Text(
-                    text = formatPeso(item.totalCents),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.width(16.dp))
-                Chevron(
-                    direction = ChevronDirection.Right,
-                    color = MaterialTheme.colorScheme.outlineVariant,
-                    modifier = Modifier.size(width = 8.dp, height = 14.dp)
-                )
             }
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         }
+        if (showDivider) {
+            HorizontalDivider(
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+        }
+        println("\n item count: $item")
     }
 }
 

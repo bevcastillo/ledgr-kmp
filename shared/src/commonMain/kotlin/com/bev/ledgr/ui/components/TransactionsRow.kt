@@ -2,21 +2,17 @@ package com.bev.ledgr.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountBalance
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,8 +29,6 @@ import com.bev.ledgr.data.TransactionType
 import com.bev.ledgr.ui.formatCents
 import com.bev.ledgr.ui.formatShortDate
 import com.bev.ledgr.ui.theme.primaryColor
-
-private const val TINT_ALPHA = 0.15f
 
 private data class RowCategoryStyle(val label: String, val icon: ImageVector, val color: Color)
 
@@ -100,30 +94,13 @@ fun TransactionsRow(transaction: Transaction, onClick: () -> Unit, showDivider: 
 }
 
 @Composable
-private fun CategoryIconCircle(icon: ImageVector, color: Color) {
-    Box(
-        modifier = Modifier
-            .size(44.dp)
-            .background(color.copy(alpha = TINT_ALPHA), CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = color,
-            modifier = Modifier.size(22.dp)
-        )
-    }
-}
-
-@Composable
 private fun CategoryPill(label: String, color: Color) {
     Text(
         text = label,
         style = MaterialTheme.typography.labelMedium,
         color = color,
         modifier = Modifier
-            .background(color.copy(alpha = TINT_ALPHA), RoundedCornerShape(6.dp))
+            .background(color.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
             .padding(horizontal = 8.dp, vertical = 2.dp)
     )
 }

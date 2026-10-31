@@ -96,6 +96,7 @@ fun HomeScreen(
         FabMenuItem(label = "Add income", onClick = { onAddClick(TransactionType.INCOME) })
     )
     val recentTransactions = state.transactions.take(RECENT_TRANSACTION_LIMIT)
+    val exceedsRecentLimit = state.transactions.size > RECENT_TRANSACTION_LIMIT
 
     Scaffold(
         topBar = {
@@ -192,7 +193,7 @@ fun HomeScreen(
                         fontWeight = FontWeight.SemiBold
                     )
 
-                    if (state.transactions.size > RECENT_TRANSACTION_LIMIT) {
+                    if (exceedsRecentLimit) {
                         TextButton(onClick = {
                             onTransactionClick(
                                 null,
@@ -236,29 +237,17 @@ fun HomeScreen(
                                 )
                             }
 
-                            if (state.transactions.size > RECENT_TRANSACTION_LIMIT) {
-                                item(key = "see all") {
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        TextButton(onClick = {
+                            if (exceedsRecentLimit) {
+                                item(key = "see_all") {
+                                    SeeAllButton(
+                                        onSeeAllClick = {
                                             onTransactionClick(
                                                 null,
                                                 state.selectedYear,
                                                 state.selectedMonth
                                             )
-                                        }) {
-                                            Text(text = "See All", color = primaryColor)
-                                            Spacer(Modifier.width(4.dp))
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Rounded.ArrowRightAlt,
-                                                contentDescription = null,
-                                                tint = primaryColor,
-                                                modifier = Modifier.size(ButtonDefaults.IconSize)
-                                            )
                                         }
-                                    }
+                                    )
                                 }
                             }
                         }
@@ -279,6 +268,25 @@ fun HomeScreen(
                         ) { fabExpanded = false }
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun SeeAllButton(onSeeAllClick: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.Center
+    ) {
+        TextButton(onClick = onSeeAllClick) {
+            Text(text = "See All", color = primaryColor)
+            Spacer(Modifier.width(4.dp))
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.ArrowRightAlt,
+                contentDescription = null,
+                tint = primaryColor,
+                modifier = Modifier.size(ButtonDefaults.IconSize)
+            )
         }
     }
 }

@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowRightAlt
@@ -32,7 +31,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -52,13 +50,13 @@ import com.bev.ledgr.ui.components.SummaryCardsRow
 import com.bev.ledgr.ui.components.TransactionsRow
 import com.bev.ledgr.ui.components.YearPicker
 import com.bev.ledgr.ui.theme.primaryColor
+import kotlin.math.abs
+import kotlin.time.Instant
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.math.abs
-import kotlin.time.Instant
 
 private const val RECENT_TRANSACTION_LIMIT = 5
 
@@ -228,8 +226,9 @@ fun HomeScreen(
                             modifier = Modifier.weight(1f),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            itemsIndexed(recentTransactions, key = { _, transaction -> transaction.id}) {
-                                index, transaction ->
+                            itemsIndexed(recentTransactions, key = { _, transaction ->
+                                transaction.id
+                            }) { index, transaction ->
                                 TransactionsRow(
                                     transaction = transaction,
                                     onClick = { onTransactionItemClick(transaction.id) },
@@ -239,7 +238,10 @@ fun HomeScreen(
 
                             if (state.transactions.size > RECENT_TRANSACTION_LIMIT) {
                                 item(key = "see all") {
-                                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.Center) {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
                                         TextButton(onClick = {
                                             onTransactionClick(
                                                 null,

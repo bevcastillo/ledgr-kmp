@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
-class FakeExpenseRepository(initial: List<Transaction> = emptyList()) : ExpenseRepository {
+class FakeTransactionRepository(initial: List<Transaction> = emptyList()) : TransactionRepository {
     private val expenses = MutableStateFlow(initial)
     val current: List<Transaction> get() = expenses.value
     private var nextId = (initial.maxOfOrNull { it.id } ?: 0) + 1

@@ -1,6 +1,6 @@
 package com.bev.ledgr.ui
 
-import com.bev.ledgr.data.FakeExpenseRepository
+import com.bev.ledgr.data.FakeTransactionRepository
 import com.bev.ledgr.data.Transaction
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -31,7 +31,7 @@ class AddTransactionViewModelTest {
 
     @Test
     fun save_withEmptyFields_showsErrorsAndDoesNotSave() = runTest {
-        val repository = FakeExpenseRepository()
+        val repository = FakeTransactionRepository()
         val viewModel = AddTransactionViewModel(expenseId = null, repository = repository)
 
         viewModel.onSave()
@@ -45,7 +45,7 @@ class AddTransactionViewModelTest {
 
     @Test
     fun save_withValidInput_addsExpense() = runTest {
-        val repository = FakeExpenseRepository()
+        val repository = FakeTransactionRepository()
         val viewModel = AddTransactionViewModel(expenseId = null, repository = repository)
 
         viewModel.onTitleChange("Lunch")
@@ -70,7 +70,7 @@ class AddTransactionViewModelTest {
         val viewModel =
             AddTransactionViewModel(
                 expenseId = 7,
-                repository = FakeExpenseRepository(listOf(existing))
+                repository = FakeTransactionRepository(listOf(existing))
             )
 
         val state = viewModel.uiState.value
@@ -89,7 +89,7 @@ class AddTransactionViewModelTest {
                 category = "Food",
                 dateMillis = 1000
             )
-        val repository = FakeExpenseRepository(listOf(existing))
+        val repository = FakeTransactionRepository(listOf(existing))
         val viewModel = AddTransactionViewModel(expenseId = 7, repository = repository)
 
         viewModel.onAmountChange("200")
@@ -110,7 +110,7 @@ class AddTransactionViewModelTest {
                 category = "Food",
                 dateMillis = 1000
             )
-        val repository = FakeExpenseRepository(listOf(existing))
+        val repository = FakeTransactionRepository(listOf(existing))
         val viewModel = AddTransactionViewModel(expenseId = 7, repository = repository)
 
         viewModel.onDelete()

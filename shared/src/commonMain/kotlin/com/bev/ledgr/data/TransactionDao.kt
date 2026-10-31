@@ -22,14 +22,24 @@ interface TransactionDao {
 
     @Query(
         """
-            SELECT category, SUM(amountCents) AS totalCents
+            SELECT category, SUM(amountCents) AS totalCents, COUNT(*) AS transactionCount
             FROM transactions
-            WHERE dateMillis >= :startMillis AND dateMillis < :endMillis
-            GROUP by category
-            ORDER by totalCents DESC
+            WHERE type = :type
+              AND category IS NOT NULL
+              AND dateMillis >= :startMillis AND dateMillis < :endMillis
+            GROUP BY category
         """
     )
-    fun observeCategoryTotals(startMillis: Long, endMillis: Long): Flow<List<CategoryTotal>>
+    fun observeCategoryTotals(
+        startMillis: Long,
+        endMillis: Long,
+        type: TransactionType
+    ): Flow<List<CategoryTotalRow>>
+
+    @Query("SELECT MIN(dateMillis) FROM transactions WHERE type = :type")
+    fun observeEarliestDateMillis(type: TransactionType): Flow<Long?>
 }
 
-data class CategoryTotal(val category: String, val totalCents: Long)
+data class CategoryTotalRow(val category: String, val totalCents: Long, val transactionCount: Int)
+
+data class CategoryTotal(val category: Category, val totalCents: Long, val transactionCount: Int)

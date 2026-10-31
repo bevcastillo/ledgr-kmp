@@ -1,8 +1,8 @@
 package com.bev.ledgr.di
 
 import com.bev.ledgr.data.AppDatabase
-import com.bev.ledgr.data.ExpenseRepository
-import com.bev.ledgr.data.ExpenseRepositoryImpl
+import com.bev.ledgr.data.TransactionRepository
+import com.bev.ledgr.data.TransactionRepositoryImpl
 import com.bev.ledgr.data.TransactionType
 import com.bev.ledgr.data.getRoomDatabase
 import com.bev.ledgr.ui.AddTransactionViewModel
@@ -19,7 +19,7 @@ expect val platformModule: Module
 val sharedModule = module {
     single { getRoomDatabase(get()) }
     single { get<AppDatabase>().transactionDao() }
-    single<ExpenseRepository> { ExpenseRepositoryImpl(get()) }
+    single<TransactionRepository> { TransactionRepositoryImpl(get()) }
     viewModel { ExpenseListViewModel(repository = get()) }
     viewModel { (expenseId: Long?, type: TransactionType?) ->
         AddTransactionViewModel(

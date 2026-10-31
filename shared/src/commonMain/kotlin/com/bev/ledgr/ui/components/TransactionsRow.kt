@@ -47,11 +47,7 @@ private fun styleFor(transaction: Transaction): RowCategoryStyle =
     }
 
 @Composable
-fun TransactionsRow(
-    transaction: Transaction,
-    onClick: () -> Unit,
-    showDivider: Boolean = true
-) {
+fun TransactionsRow(transaction: Transaction, onClick: () -> Unit, showDivider: Boolean = true) {
     val style = styleFor(transaction)
 
     Column(modifier = Modifier.fillMaxWidth()) {

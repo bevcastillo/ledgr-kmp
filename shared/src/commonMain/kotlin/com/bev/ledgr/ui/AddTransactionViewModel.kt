@@ -2,8 +2,8 @@ package com.bev.ledgr.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bev.ledgr.data.ExpenseRepository
 import com.bev.ledgr.data.Transaction
+import com.bev.ledgr.data.TransactionRepository
 import com.bev.ledgr.data.TransactionType
 import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +43,7 @@ data class AddTransactionUiState(
 
 class AddTransactionViewModel(
     private val expenseId: Long?,
-    private val repository: ExpenseRepository,
+    private val repository: TransactionRepository,
     type: TransactionType?
 ) : ViewModel() {
 

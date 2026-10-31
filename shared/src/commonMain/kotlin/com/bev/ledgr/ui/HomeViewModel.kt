@@ -2,8 +2,8 @@ package com.bev.ledgr.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bev.ledgr.data.ExpenseRepository
 import com.bev.ledgr.data.Transaction
+import com.bev.ledgr.data.TransactionRepository
 import com.bev.ledgr.data.TransactionType
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -21,6 +21,8 @@ import kotlinx.datetime.todayIn
 
 private val AllMonths = (1..12).toList()
 
+data class SelectedMonth(val year: Int, val month: Int)
+
 data class ExpenseListUiState(
     val transactions: List<Transaction> = emptyList(),
     val totalExpenseCents: Long = 0,
@@ -34,7 +36,7 @@ data class ExpenseListUiState(
 )
 
 class ExpenseListViewModel(
-    private val repository: ExpenseRepository,
+    private val repository: TransactionRepository,
     clock: Clock = Clock.System,
     private val timeZone: TimeZone = TimeZone.currentSystemDefault()
 ) : ViewModel() {

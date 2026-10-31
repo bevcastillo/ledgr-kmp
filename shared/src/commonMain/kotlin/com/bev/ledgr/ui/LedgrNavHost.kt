@@ -54,7 +54,11 @@ fun LedgrNavHost() {
             )
         }
         composable<SummaryDestination> {
-            SummaryRoute(onBack = { navController.popBackStack() })
+            SummaryRoute(
+                onBack = { navController.popBackStack() },
+                onSeeAllTransactions = { },
+                onCategoryClick = { }
+            )
         }
         composable<TransactionListDestination> { backStackEntry ->
             val destination = backStackEntry.toRoute<TransactionListDestination>()

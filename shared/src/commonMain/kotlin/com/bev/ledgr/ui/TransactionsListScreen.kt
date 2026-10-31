@@ -86,10 +86,13 @@ fun TransactionListScreen(
         TransactionType.INCOME -> "Total Income"
         null -> "Remaining Balance"
     }
-    
+
     val cardCents: String = formatCents(
-        if (type == TransactionType.INCOME) state.totalIncomeCents
-        else state.totalExpenseCents
+        if (type == TransactionType.INCOME) {
+            state.totalIncomeCents
+        } else {
+            state.totalExpenseCents
+        }
     )
 
     val transactions = remember(state.transactions, type) {
@@ -136,11 +139,14 @@ fun TransactionListScreen(
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors =
-                        CardDefaults.cardColors(
-                            containerColor = primaryLight
-                        )
+                    CardDefaults.cardColors(
+                        containerColor = primaryLight
+                    )
                 ) {
-                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Column(
                             modifier = Modifier
                                 .weight(1f)
@@ -161,15 +167,20 @@ fun TransactionListScreen(
                             )
                             Spacer(Modifier.height(8.dp))
                             Text(
-                                text = "for ${monthName(state.selectedMonth)} ${state.selectedYear}",
+                                text = "for ${monthName(
+                                    state.selectedMonth
+                                )} ${state.selectedYear}",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = Color.Black.copy(alpha = 0.6f)
                             )
                         }
 
                         val drawableImage: DrawableResource =
-                            if (type == TransactionType.EXPENSE) Res.drawable.receipt_peso
-                            else Res.drawable.wallet_peso
+                            if (type == TransactionType.EXPENSE) {
+                                Res.drawable.receipt_peso
+                            } else {
+                                Res.drawable.wallet_peso
+                            }
 
                         Image(
                             painter = painterResource(drawableImage),
@@ -196,8 +207,10 @@ fun TransactionListScreen(
                 }
                 else -> {
                     LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
-                        itemsIndexed(transactions, key = { _, transaction -> transaction.id}) {
-                                index, transaction ->
+                        itemsIndexed(transactions, key = { _, transaction -> transaction.id }) {
+                                index,
+                                transaction
+                            ->
                             TransactionsRow(
                                 transaction = transaction,
                                 onClick = { onTransactionClick(transaction.id) },

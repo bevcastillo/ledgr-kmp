@@ -35,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.TransactionType
 import com.bev.ledgr.ui.components.TransactionsRow
 import com.bev.ledgr.ui.theme.primaryLight
@@ -51,6 +52,7 @@ fun TransactionListRoute(
     year: Int,
     month: Int,
     onTransactionClick: (Long) -> Unit,
+    category: Category?,
     onBack: () -> Unit,
     viewModel: ExpenseListViewModel = koinViewModel()
 ) {
@@ -63,6 +65,7 @@ fun TransactionListRoute(
     TransactionListScreen(
         state = state,
         type = type,
+        category = category,
         onTransactionClick = onTransactionClick,
         onBack = onBack
     )
@@ -72,6 +75,7 @@ fun TransactionListRoute(
 fun TransactionListScreen(
     state: ExpenseListUiState,
     type: TransactionType?,
+    category: Category?,
     onTransactionClick: (Long) -> Unit,
     onBack: () -> Unit
 ) {
@@ -95,11 +99,12 @@ fun TransactionListScreen(
         }
     )
 
-    val transactions = remember(state.transactions, type) {
-        if (type == null) {
-            state.transactions
-        } else {
-            state.transactions.filter { it.type == type }
+    val transactions = remember(state.transactions, type, category) {
+        state.transactions.filter { transaction ->
+            val matchesType = type == null || transaction.type == type
+            val matchesCategory = category == null ||
+                transaction.category.let(Category::fromStored) == category
+            matchesType && matchesCategory
         }
     }
 

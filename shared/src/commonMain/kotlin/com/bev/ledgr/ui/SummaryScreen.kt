@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,12 +53,12 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.CategoryTotal
+import com.bev.ledgr.data.TransactionType
 import com.bev.ledgr.ui.components.CategoryIconCircle
 import com.bev.ledgr.ui.components.MonthSelector
 import com.bev.ledgr.ui.components.color
@@ -71,7 +72,12 @@ private val AllMonths = (1..12).toList()
 @Composable
 fun SummaryRoute(
     onBack: () -> Unit,
-    onSeeAllTransactions: () -> Unit,
+    onSeeAllTransactions: (
+        type: TransactionType?,
+        category: Category?,
+        year: Int,
+        month: Int
+    ) -> Unit,
     onCategoryClick: (Category) -> Unit,
     viewModel: SummaryViewModel = koinViewModel()
 ) {
@@ -94,7 +100,12 @@ fun SummaryScreen(
     onPeriodChange: (SummaryPeriod) -> Unit,
     onYearSelect: (Int) -> Unit,
     onMonthSelect: (Int) -> Unit,
-    onSeeAllTransactions: () -> Unit,
+    onSeeAllTransactions: (
+        type: TransactionType?,
+        category: Category?,
+        year: Int,
+        month: Int
+    ) -> Unit,
     onCategoryClick: (Category) -> Unit
 ) {
     Scaffold(
@@ -167,24 +178,19 @@ fun SummaryScreen(
                 }
 
                 Spacer(Modifier.height(32.dp))
-                Text(
-                    text = "See all transactions",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        textDecoration = TextDecoration.Underline
-                    ),
-                    fontWeight = FontWeight.Medium,
-                    color = primaryColor,
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .clip(RoundedCornerShape(6.dp))
-                        .clickable(role = Role.Button, onClick = onSeeAllTransactions)
-                        .padding(4.dp)
-                )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        onClick = { onSeeAllTransactions(null, null, state.year, state.month) },
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    ) {
+                        Text(text = "See All", color = primaryColor)
+                    }
+                }
 
                 Spacer(Modifier.height(8.dp))
                 if (state.totals.isEmpty()) {
                     Text(
-                        text = "No expenses for thie period",
+                        text = "No expenses for this period",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(vertical = 32.dp)
@@ -193,7 +199,10 @@ fun SummaryScreen(
                     state.totals.forEach { item ->
                         CategoryRow(
                             item = item,
-                            onClick = { onCategoryClick(item.category) },
+                            onClick = {
+                                onCategoryClick(item.category)
+                                onSeeAllTransactions(null, item.category, state.year, state.month)
+                            },
                             showDivider = state.totals.indexOf(item) < state.totals.lastIndex
                         )
                     }
@@ -380,11 +389,7 @@ private fun SpendingDonut(
 }
 
 @Composable
-private fun CategoryRow(
-    item: CategoryTotal,
-    onClick: () -> Unit,
-    showDivider: Boolean
-) {
+private fun CategoryRow(item: CategoryTotal, onClick: () -> Unit, showDivider: Boolean) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier

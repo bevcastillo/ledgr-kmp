@@ -1,5 +1,8 @@
 package com.bev.ledgr.data
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class Category(val key: String, val label: String) {
     FOOD("food", "Food"),
     GROCERIES("groceries", "Groceries"),

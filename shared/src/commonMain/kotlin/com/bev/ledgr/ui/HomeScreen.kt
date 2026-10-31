@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.TransactionType
 import com.bev.ledgr.ui.components.ExpandableFabMenu
 import com.bev.ledgr.ui.components.FabMenuItem
@@ -65,7 +66,12 @@ fun HomeRoute(
     onAddClick: (TransactionType) -> Unit,
     onTransactionItemClick: (Long) -> Unit,
     onSummaryClick: () -> Unit,
-    onTransactionClick: (type: TransactionType?, year: Int, month: Int) -> Unit,
+    onTransactionClick: (
+        type: TransactionType?,
+        category: Category?,
+        year: Int,
+        month: Int
+    ) -> Unit,
     viewModel: ExpenseListViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -86,7 +92,12 @@ fun HomeScreen(
     onAddClick: (TransactionType) -> Unit,
     onTransactionItemClick: (Long) -> Unit,
     onSummaryClick: () -> Unit,
-    onTransactionClick: (type: TransactionType?, year: Int, month: Int) -> Unit,
+    onTransactionClick: (
+        type: TransactionType?,
+        category: Category?,
+        year: Int,
+        month: Int
+    ) -> Unit,
     onYearSelected: (Int) -> Unit,
     onMonthSelected: (Int) -> Unit
 ) {
@@ -161,6 +172,7 @@ fun HomeScreen(
                     onIncomeClick = {
                         onTransactionClick(
                             TransactionType.INCOME,
+                            null,
                             state.selectedYear,
                             state.selectedMonth
                         )
@@ -168,6 +180,7 @@ fun HomeScreen(
                     onExpensesClick = {
                         onTransactionClick(
                             TransactionType.EXPENSE,
+                            null,
                             state.selectedYear,
                             state.selectedMonth
                         )
@@ -196,6 +209,7 @@ fun HomeScreen(
                     if (exceedsRecentLimit) {
                         TextButton(onClick = {
                             onTransactionClick(
+                                null,
                                 null,
                                 state.selectedYear,
                                 state.selectedMonth
@@ -242,6 +256,7 @@ fun HomeScreen(
                                     SeeAllButton(
                                         onSeeAllClick = {
                                             onTransactionClick(
+                                                null,
                                                 null,
                                                 state.selectedYear,
                                                 state.selectedMonth

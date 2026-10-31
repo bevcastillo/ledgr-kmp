@@ -17,16 +17,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.TransactionType
 
 private val ExpandedWidth = 840.dp
 
 @Composable
-fun ExpenseListDetail(
+fun TransactionListDetail(
     onAddClickCompact: (TransactionType) -> Unit,
     onExpenseListCompact: (Long) -> Unit,
     onSummaryClick: () -> Unit,
-    onTransactionClick: (type: TransactionType?, year: Int, month: Int) -> Unit
+    onTransactionClick: (type: TransactionType?, category: Category?, year: Int, month: Int) -> Unit
 ) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         if (maxWidth < ExpandedWidth) {
@@ -48,7 +49,7 @@ fun ExpenseListDetail(
 @Composable
 private fun TwoPaneLayout(
     onSummaryClick: () -> Unit,
-    onTransactionClick: (type: TransactionType?, year: Int, month: Int) -> Unit
+    onTransactionClick: (type: TransactionType?, category: Category?, year: Int, month: Int) -> Unit
 ) {
     var showForm by rememberSaveable { mutableStateOf(false) }
     var selectedId by rememberSaveable { mutableStateOf<Long?>(null) }

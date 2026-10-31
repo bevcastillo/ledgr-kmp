@@ -5,6 +5,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.TransactionType
 import kotlinx.serialization.Serializable
 
@@ -19,7 +20,12 @@ object SummaryDestination
 
 // type = null means All Transactions for the selected month/year
 @Serializable
-data class TransactionListDestination(val type: String? = null, val year: Int, val month: Int)
+data class TransactionListDestination(
+    val type: String? = null,
+    val category: Category? = null,
+    val year: Int,
+    val month: Int
+)
 
 @Composable
 fun LedgrNavHost() {
@@ -30,7 +36,7 @@ fun LedgrNavHost() {
         startDestination = HomeDestination
     ) {
         composable<HomeDestination> {
-            ExpenseListDetail(
+            TransactionListDetail(
                 onAddClickCompact = { type ->
                     navController.navigate(TransactionFormDestination(type = type.name))
                 },
@@ -38,9 +44,14 @@ fun LedgrNavHost() {
                     navController.navigate(TransactionFormDestination(expenseId = id))
                 },
                 onSummaryClick = { navController.navigate(SummaryDestination) },
-                onTransactionClick = { type, year, month ->
+                onTransactionClick = { type, category, year, month ->
                     navController.navigate(
-                        TransactionListDestination(type = type?.name, year = year, month = month)
+                        TransactionListDestination(
+                            type = type?.name,
+                            category = category,
+                            year = year,
+                            month = month
+                        )
                     )
                 }
             )
@@ -56,7 +67,16 @@ fun LedgrNavHost() {
         composable<SummaryDestination> {
             SummaryRoute(
                 onBack = { navController.popBackStack() },
-                onSeeAllTransactions = { },
+                onSeeAllTransactions = { type, category, year, month ->
+                    navController.navigate(
+                        TransactionListDestination(
+                            type = type?.name,
+                            category = category,
+                            year = year,
+                            month = month
+                        )
+                    )
+                },
                 onCategoryClick = { }
             )
         }
@@ -66,6 +86,7 @@ fun LedgrNavHost() {
                 type = destination.type?.let { TransactionType.valueOf(it) },
                 year = destination.year,
                 month = destination.month,
+                category = destination.category,
                 onTransactionClick = { id ->
                     navController.navigate(TransactionFormDestination(expenseId = id))
                 },

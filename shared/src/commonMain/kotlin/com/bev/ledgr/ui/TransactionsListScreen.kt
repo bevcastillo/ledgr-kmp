@@ -31,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,6 +39,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.TransactionType
 import com.bev.ledgr.ui.components.TransactionsRow
+import com.bev.ledgr.ui.components.color
+import com.bev.ledgr.ui.components.illustrations
 import com.bev.ledgr.ui.theme.primaryLight
 import ledgr.shared.generated.resources.Res
 import ledgr.shared.generated.resources.receipt_peso
@@ -79,17 +82,27 @@ fun TransactionListScreen(
     onTransactionClick: (Long) -> Unit,
     onBack: () -> Unit
 ) {
+    val categoryLabel = category?.label ?: "Transactions"
+
     val title: String = when (type) {
         TransactionType.EXPENSE -> "Expenses"
         TransactionType.INCOME -> "Income"
-        null -> "All Transactions"
+        null -> "All $categoryLabel"
     }
 
     val cardLabel: String = when (type) {
-        TransactionType.EXPENSE -> "Total Expenses"
-        TransactionType.INCOME -> "Total Income"
-        null -> "Remaining Balance"
+        TransactionType.EXPENSE -> "You spent"
+        TransactionType.INCOME -> "You received"
+        null -> "You spent"
     }
+
+    val monthLabel = "${monthName(state.selectedMonth)} ${state.selectedYear}"
+    val cardBottomLabel: String =
+        if (category != null) {
+            "on ${categoryLabel.lowercase()} in $monthLabel"
+        } else {
+            "in $monthLabel"
+        }
 
     val cardCents: String = formatCents(
         if (type == TransactionType.INCOME) {
@@ -108,7 +121,17 @@ fun TransactionListScreen(
         }
     }
 
-    val monthLabel = "${monthName(state.selectedMonth)} ${state.selectedYear}"
+    val cardColor: Color =
+        category?.color
+            ?.copy(alpha = 0.15f)
+            ?.compositeOver(MaterialTheme.colorScheme.surface)
+            ?: primaryLight
+
+    val cardIllustration: DrawableResource = when {
+        category != null -> category.illustrations
+        type == TransactionType.INCOME -> Res.drawable.wallet_peso
+        else -> Res.drawable.receipt_peso
+    }
 
     Scaffold(
         topBar = {
@@ -137,63 +160,25 @@ fun TransactionListScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            val expensePerCategoryCents: Long = transactions
+                .filter { it.type == TransactionType.EXPENSE }
+                .sumOf { it.amountCents }
+
             if (type != null) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors =
-                    CardDefaults.cardColors(
-                        containerColor = primaryLight
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 16.dp, vertical = 20.dp)
-                        ) {
-                            Text(
-                                text = cardLabel,
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.Black.copy(alpha = 0.6f)
-                            )
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                text = cardCents,
-                                style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                text = "for ${monthName(
-                                    state.selectedMonth
-                                )} ${state.selectedYear}",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = Color.Black.copy(alpha = 0.6f)
-                            )
-                        }
-
-                        val drawableImage: DrawableResource =
-                            if (type == TransactionType.EXPENSE) {
-                                Res.drawable.receipt_peso
-                            } else {
-                                Res.drawable.wallet_peso
-                            }
-
-                        Image(
-                            painter = painterResource(drawableImage),
-                            contentDescription = null,
-                            modifier = Modifier.size(100.dp)
-                        )
-                    }
-                }
+                MonthlyTotalCard(
+                    cardLabel = cardLabel,
+                    cardCents = cardCents,
+                    cardBottomLabel = cardBottomLabel,
+                    cardIllustration = cardIllustration
+                )
+            } else {
+                MonthlyTotalCard(
+                    cardLabel = cardLabel,
+                    cardCents = formatCents(expensePerCategoryCents),
+                    cardBottomLabel = cardBottomLabel,
+                    containerColor = cardColor,
+                    cardIllustration = cardIllustration
+                )
             }
 
             when {
@@ -219,12 +204,70 @@ fun TransactionListScreen(
                             TransactionsRow(
                                 transaction = transaction,
                                 onClick = { onTransactionClick(transaction.id) },
-                                showDivider = index < transactions.lastIndex
+                                showDivider = index < transactions.lastIndex,
+                                showCategoryPill = false
                             )
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun MonthlyTotalCard(
+    cardLabel: String,
+    cardCents: String,
+    cardBottomLabel: String,
+    cardIllustration: DrawableResource,
+    containerColor: Color = primaryLight
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors =
+        CardDefaults.cardColors(
+            containerColor = containerColor
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp, vertical = 20.dp)
+            ) {
+                Text(
+                    text = cardLabel,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.Black.copy(alpha = 0.6f)
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = cardCents,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = cardBottomLabel,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.Black.copy(alpha = 0.6f)
+                )
+            }
+
+            Image(
+                painter = painterResource(cardIllustration),
+                contentDescription = null,
+                modifier = Modifier.size(100.dp)
+            )
         }
     }
 }

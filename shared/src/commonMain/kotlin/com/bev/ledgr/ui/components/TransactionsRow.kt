@@ -41,7 +41,12 @@ private fun styleFor(transaction: Transaction): RowCategoryStyle =
     }
 
 @Composable
-fun TransactionsRow(transaction: Transaction, onClick: () -> Unit, showDivider: Boolean = true) {
+fun TransactionsRow(
+    transaction: Transaction,
+    onClick: () -> Unit,
+    showDivider: Boolean = true,
+    showCategoryPill: Boolean = true
+) {
     val style = styleFor(transaction)
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -49,7 +54,7 @@ fun TransactionsRow(transaction: Transaction, onClick: () -> Unit, showDivider: 
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
-                .padding(vertical = 8.dp),
+                .padding(vertical = if (showCategoryPill) 8.dp else 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CategoryIconCircle(icon = style.icon, color = style.color)
@@ -65,8 +70,11 @@ fun TransactionsRow(transaction: Transaction, onClick: () -> Unit, showDivider: 
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.height(6.dp))
-                CategoryPill(label = style.label, color = style.color)
-                Spacer(Modifier.height(6.dp))
+
+                if (showCategoryPill) {
+                    CategoryPill(label = style.label, color = style.color)
+                    Spacer(Modifier.height(6.dp))
+                }
 
                 Text(
                     text = formatShortDate(transaction.dateMillis),

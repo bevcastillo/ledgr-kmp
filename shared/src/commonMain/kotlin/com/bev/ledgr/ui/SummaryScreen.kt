@@ -1,5 +1,6 @@
 package com.bev.ledgr.ui
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -49,10 +51,16 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -68,6 +76,12 @@ import com.bev.ledgr.ui.theme.primaryDark
 import org.koin.compose.viewmodel.koinViewModel
 
 private val AllMonths = (1..12).toList()
+private val MonthInitials = listOf("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")
+
+private val MonthNames = listOf(
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+)
 
 @Composable
 fun SummaryRoute(
@@ -150,64 +164,21 @@ fun SummaryScreen(
                 onSelect = onPeriodChange
             )
 
-            if (state.period == SummaryPeriod.Monthly) {
-                Spacer(Modifier.height(24.dp))
-                MonthSelector(
-                    selectedMonth = state.month,
-                    availableMonths = AllMonths,
-                    onMonthSelected = onMonthSelect
+            when (state.period) {
+                SummaryPeriod.Monthly -> MonthlyContent(
+                    state = state,
+                    onMonthSelect = onMonthSelect,
+                    onSeeAllTransactions = onSeeAllTransactions,
+                    onCategoryClick = onCategoryClick,
+                    hasExpenses = state.totals.isNotEmpty()
                 )
-                Spacer(Modifier.height(32.dp))
-                SpendingDonut(
-                    totals = state.totals,
-                    modifier = Modifier.fillMaxWidth(0.66f)
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = formatPeso(state.grandTotalCents),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "spent",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                SummaryPeriod.Annually -> AnnualContent(
+                    state = state,
+                    onMonthClick = { month ->
+                        onMonthSelect(month)
+                        onPeriodChange(SummaryPeriod.Monthly)
                     }
-                }
-
-                Spacer(Modifier.height(32.dp))
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    TextButton(
-                        onClick = { onSeeAllTransactions(null, null, state.year, state.month) },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    ) {
-                        Text(text = "See All", color = primaryColor)
-                    }
-                }
-
-                Spacer(Modifier.height(8.dp))
-                if (state.totals.isEmpty()) {
-                    Text(
-                        text = "No expenses for this period",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 32.dp)
-                    )
-                } else {
-                    state.totals.forEach { item ->
-                        CategoryRow(
-                            item = item,
-                            onClick = {
-                                onCategoryClick(item.category)
-                                onSeeAllTransactions(null, item.category, state.year, state.month)
-                            },
-                            showDivider = state.totals.indexOf(item) < state.totals.lastIndex
-                        )
-                    }
-                }
-                Spacer(Modifier.height(24.dp))
+                )
             }
         }
     }
@@ -330,6 +301,217 @@ private fun PeriodToggle(selected: SummaryPeriod, onSelect: (SummaryPeriod) -> U
 }
 
 @Composable
+private fun MonthlyContent(
+    state: SummaryUiState,
+    onMonthSelect: (Int) -> Unit,
+    onSeeAllTransactions: (
+        type: TransactionType?,
+        category: Category?,
+        year: Int,
+        month: Int
+    ) -> Unit,
+    onCategoryClick: (Category) -> Unit,
+    hasExpenses: Boolean
+) {
+    Spacer(Modifier.height(24.dp))
+    MonthSelector(
+        selectedMonth = state.month,
+        availableMonths = AllMonths,
+        onMonthSelected = onMonthSelect
+    )
+
+    if (hasExpenses) {
+        Spacer(Modifier.height(32.dp))
+        SpendingDonut(
+            totals = state.totals,
+            modifier = Modifier.fillMaxWidth(0.66f)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = formatPeso(state.grandTotalCents),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "spent",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(Modifier.height(32.dp))
+        Box(modifier = Modifier.fillMaxWidth()) {
+            TextButton(
+                onClick = { onSeeAllTransactions(null, null, state.year, state.month) },
+                modifier = Modifier.align(Alignment.CenterEnd)
+            ) {
+                Text(text = "See All", color = primaryColor)
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        state.totals.forEach { item ->
+            CategoryRow(
+                item = item,
+                onClick = {
+                    onCategoryClick(item.category)
+                    onSeeAllTransactions(null, item.category, state.year, state.month)
+                },
+                showDivider = state.totals.indexOf(item) < state.totals.lastIndex
+            )
+        }
+        Spacer(Modifier.height(24.dp))
+    } else {
+        Text(
+            text = "No expenses for this period",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(vertical = 32.dp)
+        )
+    }
+}
+
+@Composable
+private fun AnnualContent(state: SummaryUiState, onMonthClick: (Int) -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(Modifier.height(32.dp))
+        AnnualSection(
+            title = "Expenses",
+            totalLabel = "Total Spent",
+            monthlyCents = state.monthlyExpenseCents,
+            onMonthClick = onMonthClick
+        )
+        Spacer(Modifier.height(48.dp))
+        AnnualSection(
+            title = "Income",
+            totalLabel = "Total Received",
+            monthlyCents = state.monthlyIncomeCents,
+            onMonthClick = onMonthClick
+        )
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun AnnualSection(
+    title: String,
+    totalLabel: String,
+    monthlyCents: List<Long>,
+    onMonthClick: (Int) -> Unit
+) {
+    val total = monthlyCents.sum()
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    val strong = MaterialTheme.colorScheme.onSurface
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.SemiBold,
+            color = strong
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            text = buildAnnotatedString {
+                withStyle(SpanStyle(color = muted)) { append("$totalLabel: ") }
+                withStyle(SpanStyle(color = strong, fontWeight = FontWeight.Medium)) {
+                    append(formatPeso(total))
+                }
+            },
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(Modifier.height(24.dp))
+        MonthlyBarChart(
+            monthlyCents = monthlyCents,
+            onMonthClick = onMonthClick
+        )
+    }
+}
+
+@Composable
+private fun MonthlyBarChart(
+    monthlyCents: List<Long>,
+    onMonthClick: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    maxBarHeight: Dp = 160.dp,
+    barWidth: Dp = 18.dp
+) {
+    val maxValue = monthlyCents.maxOrNull()?.takeIf { it > 0 } ?: 1L
+    val emptyBarColor = MaterialTheme.colorScheme.surfaceVariant
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Bottom
+    ) {
+        MonthInitials.forEachIndexed { index, initial ->
+            val cents = monthlyCents.getOrElse(index) { 0L }
+            val month = index + 1
+            val targetHeight = if (cents <= 0L) {
+                barWidth
+            } else {
+                (maxBarHeight * (cents.toFloat() / maxValue)).coerceAtLeast(barWidth)
+            }
+            val barHeight by animateDpAsState(targetValue = targetHeight, label = "barHeight")
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable(role = Role.Button) { onMonthClick(month) }
+                    .clearAndSetSemantics {
+                        contentDescription = "${MonthNames[index]}, ${formatPeso(cents)}"
+                    }
+                    .padding(vertical = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = formatPeso(cents),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = labelColor,
+                    maxLines = 1,
+                    softWrap = false,
+                    modifier = Modifier.verticalText()
+                )
+                Spacer(Modifier.height(6.dp))
+                Box(
+                    modifier = Modifier
+                        .width(barWidth)
+                        .height(barHeight)
+                        .clip(RoundedCornerShape(percent = 50))
+                        .background(if (cents > 0L) primaryColor else emptyBarColor)
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = initial,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = labelColor
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Rotates text to read bottom-to-top and swaps its measured width/height
+ * so it takes up the right amount of space in the layout.
+ */
+private fun Modifier.verticalText(): Modifier = this
+    .layout { measurable, _ ->
+        val placeable = measurable.measure(Constraints())
+        layout(width = placeable.height, height = placeable.width) {
+            placeable.place(
+                x = -(placeable.width / 2 - placeable.height / 2),
+                y = -(placeable.height / 2 - placeable.width / 2)
+            )
+        }
+    }
+    .rotate(-90f)
+
+@Composable
 private fun SpendingDonut(
     totals: List<CategoryTotal>,
     modifier: Modifier = Modifier,
@@ -445,7 +627,6 @@ private fun CategoryRow(item: CategoryTotal, onClick: () -> Unit, showDivider: B
                 color = MaterialTheme.colorScheme.outlineVariant
             )
         }
-        println("\n item count: $item")
     }
 }
 
@@ -460,33 +641,31 @@ private fun Chevron(
 ) {
     Canvas(modifier = modifier) {
         val inset = strokeWidth.toPx() / 2
-        val left = inset
         val right = size.width - inset
-        val top = inset
         val bottom = size.height - inset
         val midX = size.width / 2
         val midY = size.height / 2
 
         val points = when (direction) {
             ChevronDirection.Left -> listOf(
-                Offset(right, top),
-                Offset(left, midY),
+                Offset(right, inset),
+                Offset(inset, midY),
                 Offset(right, bottom)
             )
             ChevronDirection.Right -> listOf(
-                Offset(left, top),
+                Offset(inset, inset),
                 Offset(right, midY),
-                Offset(left, bottom)
+                Offset(inset, bottom)
             )
             ChevronDirection.Up -> listOf(
-                Offset(left, bottom),
-                Offset(midX, top),
+                Offset(inset, bottom),
+                Offset(midX, inset),
                 Offset(right, bottom)
             )
             ChevronDirection.Down -> listOf(
-                Offset(left, top),
+                Offset(inset, inset),
                 Offset(midX, bottom),
-                Offset(right, top)
+                Offset(right, inset)
             )
         }
 
@@ -508,10 +687,12 @@ private fun Chevron(
     }
 }
 
+private fun groupThousands(value: Long): String =
+    value.toString().reversed().chunked(3).joinToString(",").reversed()
+
 private fun formatPeso(cents: Long): String {
     val pesos = (cents + 50) / 100
-    val grouped = pesos.toString().reversed().chunked(3).joinToString(",").reversed()
-    return "₱$grouped"
+    return "₱${groupThousands(pesos)}"
 }
 
 private fun transactionLabel(count: Int): String =

@@ -9,6 +9,7 @@ interface TransactionRepository {
     suspend fun deleteExpense(transaction: Transaction)
     suspend fun getExpense(id: Long): Transaction?
     fun observeCategoryTotals(startMillis: Long, endMillis: Long): Flow<List<CategoryTotal>>
+    fun observeTransactions(startMillis: Long, endMillis: Long): Flow<List<Transaction>>
     fun observeEarliestExpenseMillis(): Flow<Long?>
 }
 
@@ -34,6 +35,8 @@ class TransactionRepositoryImpl(private val dao: TransactionDao) : TransactionRe
                     .sortedByDescending { it.totalCents }
             }
 
-    override fun observeEarliestExpenseMillis(): Flow<Long?> =
-        dao.observeEarliestDateMillis(TransactionType.EXPENSE)
+    override fun observeTransactions(startMillis: Long, endMillis: Long): Flow<List<Transaction>> =
+        dao.observeBetween(startMillis, endMillis)
+
+    override fun observeEarliestExpenseMillis(): Flow<Long?> = dao.observeEarliestDateMillis()
 }

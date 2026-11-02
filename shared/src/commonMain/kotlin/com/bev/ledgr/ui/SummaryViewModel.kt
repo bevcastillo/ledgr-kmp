@@ -3,7 +3,9 @@ package com.bev.ledgr.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bev.ledgr.data.CategoryTotal
+import com.bev.ledgr.data.Transaction
 import com.bev.ledgr.data.TransactionRepository
+import com.bev.ledgr.data.TransactionType
 import com.bev.ledgr.data.monthRange
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -24,17 +26,28 @@ import kotlinx.datetime.todayIn
 
 enum class SummaryPeriod { Monthly, Annually }
 
+private val EmptyMonths: List<Long> = List(12) { 0L }
+
 data class SummaryUiState(
     val period: SummaryPeriod = SummaryPeriod.Monthly,
     val year: Int,
     val month: Int,
     val availableYears: List<Int> = listOf(year),
-    val totals: List<CategoryTotal> = emptyList()
+    val totals: List<CategoryTotal> = emptyList(),
+    val monthlyExpenseCents: List<Long> = EmptyMonths,
+    val monthlyIncomeCents: List<Long> = EmptyMonths
 ) {
     val grandTotalCents: Long get() = totals.sumOf { it.totalCents }
 }
 
 private data class Selection(val period: SummaryPeriod, val year: Int, val month: Int)
+
+private data class SelectionData(
+    val selection: Selection,
+    val totals: List<CategoryTotal> = emptyList(),
+    val monthlyExpenseCents: List<Long> = EmptyMonths,
+    val monthlyIncomeCents: List<Long> = EmptyMonths
+)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SummaryViewModel(private val repository: TransactionRepository, clock: Clock = Clock.System) :
@@ -61,23 +74,50 @@ class SummaryViewModel(private val repository: TransactionRepository, clock: Clo
 
     // Totals are paired with the selection that produced them, so the screen
     // never shows a new month's label with the previous month's numbers.
-    private val selectionWithTotals: Flow<Pair<Selection, List<CategoryTotal>>> = selection
+    private val selectionWithData: Flow<SelectionData> = selection
         .flatMapLatest { sel ->
             val (startMillis, endMillis) = rangeFor(sel)
-            repository.observeCategoryTotals(startMillis, endMillis)
-                .map { totals -> sel to totals.sortedByDescending { it.totalCents } }
+            when (sel.period) {
+                SummaryPeriod.Monthly ->
+                    repository.observeCategoryTotals(startMillis, endMillis)
+                        .map { totals ->
+                            SelectionData(
+                                selection = sel,
+                                totals = totals.sortedByDescending { it.totalCents }
+                            )
+                        }
+
+                SummaryPeriod.Annually ->
+                    repository.observeTransactions(startMillis, endMillis)
+                        .map { transactions ->
+                            SelectionData(
+                                selection = sel,
+                                monthlyExpenseCents = monthlyTotals(
+                                    transactions,
+                                    TransactionType.EXPENSE
+                                ),
+                                monthlyIncomeCents = monthlyTotals(
+                                    transactions,
+                                    TransactionType.INCOME
+                                )
+                            )
+                        }
+            }
         }
 
     val uiState: StateFlow<SummaryUiState> = combine(
-        selectionWithTotals,
+        selectionWithData,
         availableYears
-    ) { (sel, totals), years ->
+    ) { data, years ->
+        val sel = data.selection
         SummaryUiState(
             period = sel.period,
             year = sel.year,
             month = sel.month,
             availableYears = (years + sel.year).distinct().sorted(),
-            totals = totals
+            totals = data.totals,
+            monthlyExpenseCents = data.monthlyExpenseCents,
+            monthlyIncomeCents = data.monthlyIncomeCents
         )
     }.stateIn(
         scope = viewModelScope,
@@ -104,5 +144,21 @@ class SummaryViewModel(private val repository: TransactionRepository, clock: Clo
             // January's start through December's end covers the whole year
             monthRange(sel.year, 1).startMillis to monthRange(sel.year, 12).endMillis
         }
+    }
+
+    // Buckets the year's transactions into 12 months using the device time zone,
+    // the same one monthRange uses, so a month's bar matches its Monthly view.
+    private fun monthlyTotals(transactions: List<Transaction>, type: TransactionType): List<Long> {
+        val buckets = LongArray(12)
+        transactions
+            .filter { it.type == type }
+            .forEach { transaction ->
+                val month = Instant.fromEpochMilliseconds(transaction.dateMillis)
+                    .toLocalDateTime(timeZone)
+                    .month
+                    .number
+                buckets[month - 1] += transaction.amountCents
+            }
+        return buckets.toList()
     }
 }

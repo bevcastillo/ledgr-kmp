@@ -36,8 +36,18 @@ interface TransactionDao {
         type: TransactionType
     ): Flow<List<CategoryTotalRow>>
 
-    @Query("SELECT MIN(dateMillis) FROM transactions WHERE type = :type")
-    fun observeEarliestDateMillis(type: TransactionType): Flow<Long?>
+    // Earliest transaction of any type (expense or income), for the year dropdown
+    @Query("SELECT MIN(dateMillis) FROM transactions")
+    fun observeEarliestDateMillis(): Flow<Long?>
+
+    @Query(
+        """
+    SELECT * FROM transactions
+    WHERE dateMillis >= :startMillis AND dateMillis < :endMillis
+    ORDER BY dateMillis ASC
+    """
+    )
+    fun observeBetween(startMillis: Long, endMillis: Long): Flow<List<Transaction>>
 }
 
 data class CategoryTotalRow(val category: String, val totalCents: Long, val transactionCount: Int)

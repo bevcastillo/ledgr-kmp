@@ -11,9 +11,9 @@ class FakeTransactionRepository(initial: List<Transaction> = emptyList()) : Tran
     val current: List<Transaction> get() = transactions.value
     private var nextId = (initial.maxOfOrNull { it.id } ?: 0) + 1
 
-    override fun observeExpenses(): Flow<List<Transaction>> = transactions
+    override fun observeTransactions(): Flow<List<Transaction>> = transactions
 
-    override suspend fun addExpense(transaction: Transaction) {
+    override suspend fun addTransaction(transaction: Transaction) {
         transactions.update { list ->
             if (transaction.id != 0L && list.any { it.id == transaction.id }) {
                 list.map { if (it.id == transaction.id) transaction else it }
@@ -23,11 +23,14 @@ class FakeTransactionRepository(initial: List<Transaction> = emptyList()) : Tran
         }
     }
 
-    override suspend fun deleteExpense(transaction: Transaction) {
+    override suspend fun deleteTransaction(transaction: Transaction) {
         transactions.update { list -> list.filterNot { it.id == transaction.id } }
     }
 
-    override suspend fun getExpense(id: Long): Transaction? = transactions.value.find { it.id == id }
+    override suspend fun getTransactionById(id: Long): Transaction? = transactions.value.find {
+        it.id ==
+            id
+    }
 
     override fun observeCategoryTotals(
         startMillis: Long,
@@ -47,14 +50,12 @@ class FakeTransactionRepository(initial: List<Transaction> = emptyList()) : Tran
             .sortedByDescending { it.totalCents }
     }
 
-    override fun observeTransactions(
-        startMillis: Long,
-        endMillis: Long
-    ): Flow<List<Transaction>> = transactions.map { list ->
-        list.filter { it.dateMillis in startMillis..<endMillis }
-    }
+    override fun observeTransactions(startMillis: Long, endMillis: Long): Flow<List<Transaction>> =
+        transactions.map { list ->
+            list.filter { it.dateMillis in startMillis..<endMillis }
+        }
 
-    override fun observeEarliestExpenseMillis(): Flow<Long?> = transactions
+    override fun observeEarliestTransactionMillis(): Flow<Long?> = transactions
         .map { list -> list.minOfOrNull { it.dateMillis } }
         .distinctUntilChanged()
 }

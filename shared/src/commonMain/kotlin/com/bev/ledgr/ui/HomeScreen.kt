@@ -72,7 +72,7 @@ fun HomeRoute(
         year: Int,
         month: Int
     ) -> Unit,
-    viewModel: ExpenseListViewModel = koinViewModel()
+    viewModel: TransactionListViewModel = koinViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     HomeScreen(
@@ -88,7 +88,7 @@ fun HomeRoute(
 
 @Composable
 fun HomeScreen(
-    state: ExpenseListUiState,
+    state: TransactionListUiState,
     onAddClick: (TransactionType) -> Unit,
     onTransactionItemClick: (Long) -> Unit,
     onSummaryClick: () -> Unit,
@@ -238,8 +238,7 @@ fun HomeScreen(
                     }
                     else -> {
                         LazyColumn(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier.weight(1f)
                         ) {
                             itemsIndexed(recentTransactions, key = { _, transaction ->
                                 transaction.id

@@ -64,7 +64,7 @@ class SummaryViewModel(private val repository: TransactionRepository, clock: Clo
     )
 
     // Years from the oldest expense up to this year, for the year dropdown
-    private val availableYears: Flow<List<Int>> = repository.observeEarliestExpenseMillis()
+    private val availableYears: Flow<List<Int>> = repository.observeEarliestTransactionMillis()
         .map { earliestMillis ->
             val firstYear = earliestMillis
                 ?.let { Instant.fromEpochMilliseconds(it).toLocalDateTime(timeZone).year }

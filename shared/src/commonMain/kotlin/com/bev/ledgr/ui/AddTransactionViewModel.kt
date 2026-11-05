@@ -42,7 +42,7 @@ data class AddTransactionUiState(
 )
 
 class AddTransactionViewModel(
-    private val expenseId: Long?,
+    private val transactionId: Long?,
     private val repository: TransactionRepository,
     type: TransactionType?
 ) : ViewModel() {
@@ -52,18 +52,18 @@ class AddTransactionViewModel(
     )
     val uiState: StateFlow<AddTransactionUiState> = _uiState.asStateFlow()
 
-    private var loadedTransaction: Transaction? = null
+    private var loadedTransactions: Transaction? = null
 
     init {
-        if (expenseId != null) {
+        if (transactionId != null) {
             viewModelScope.launch {
-                val transaction = repository.getExpense(expenseId) ?: return@launch
-                loadedTransaction = transaction
+                val transaction = repository.getTransactionById(transactionId) ?: return@launch
+                loadedTransactions = transaction
                 _uiState.update {
                     it.copy(
                         title = transaction.title,
                         amount = centsToInput(transaction.amountCents),
-                        category = transaction.category,
+                        category = transaction.category ?: Categories.first(),
                         note = transaction.note.orEmpty(),
                         dateMillis = transaction.dateMillis,
                         isEditing = true,
@@ -96,18 +96,20 @@ class AddTransactionViewModel(
             else -> null
         }
 
+        val category: String? = if (state.type == TransactionType.EXPENSE) state.category else null
+
         if (titleError != null || amountError != null) {
             _uiState.update { it.copy(titleError = titleError, amountError = amountError) }
             return
         }
 
         viewModelScope.launch {
-            repository.addExpense(
+            repository.addTransaction(
                 Transaction(
-                    id = loadedTransaction?.id ?: 0,
+                    id = loadedTransactions?.id ?: 0,
                     title = state.title.trim(),
                     amountCents = cents!!,
-                    category = state.category,
+                    category = category,
                     dateMillis = state.dateMillis,
                     note = state.note.trim().ifBlank { null },
                     type = state.type
@@ -118,9 +120,9 @@ class AddTransactionViewModel(
     }
 
     fun onDelete() {
-        val expense = loadedTransaction ?: return
+        val transactions = loadedTransactions ?: return
         viewModelScope.launch {
-            repository.deleteExpense(expense)
+            repository.deleteTransaction(transactions)
             _uiState.update { it.copy(isSaved = true) }
         }
     }

@@ -19,11 +19,11 @@ enum class Category(val key: String, val label: String) {
     OTHERS("others", "Others");
 
     companion object {
-        fun fromStored(value: String): Category {
+        fun fromStored(value: String?): Category {
             entries.firstOrNull { it.key == value }?.let { return it }
             entries.firstOrNull { it.label.equals(value, ignoreCase = true) }?.let { return it }
 
-            return when (value.lowercase()) {
+            return when (value?.lowercase()) {
                 "personal" -> PERSONAL_CARE
                 "subscriptions" -> BILLS
                 "credit card", "loans" -> DEBT_PAYMENTS

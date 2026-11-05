@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "46053f9904f771f44fd53ebf5ce9835e",
+    "identityHash": "18f74a323a8cf47866017a908fb39095",
     "entities": [
       {
         "tableName": "transactions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `amountCents` INTEGER NOT NULL, `category` TEXT NOT NULL, `dateMillis` INTEGER NOT NULL, `note` TEXT, `type` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `amountCents` INTEGER NOT NULL, `category` TEXT, `dateMillis` INTEGER NOT NULL, `note` TEXT, `type` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -29,8 +29,7 @@
           {
             "fieldPath": "category",
             "columnName": "category",
-            "affinity": "TEXT",
-            "notNull": true
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "dateMillis",
@@ -60,7 +59,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '46053f9904f771f44fd53ebf5ce9835e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '18f74a323a8cf47866017a908fb39095')"
     ]
   }
 }

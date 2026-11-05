@@ -57,7 +57,7 @@ fun TransactionListRoute(
     onTransactionClick: (Long) -> Unit,
     category: Category?,
     onBack: () -> Unit,
-    viewModel: ExpenseListViewModel = koinViewModel()
+    viewModel: TransactionListViewModel = koinViewModel()
 ) {
     LaunchedEffect(year, month) {
         viewModel.onYearSelected(year)
@@ -76,7 +76,7 @@ fun TransactionListRoute(
 
 @Composable
 fun TransactionListScreen(
-    state: ExpenseListUiState,
+    state: TransactionListUiState,
     type: TransactionType?,
     category: Category?,
     onTransactionClick: (Long) -> Unit,

@@ -23,7 +23,7 @@ private val AllMonths = (1..12).toList()
 
 data class SelectedMonth(val year: Int, val month: Int)
 
-data class ExpenseListUiState(
+data class TransactionListUiState(
     val transactions: List<Transaction> = emptyList(),
     val totalExpenseCents: Long = 0,
     val totalIncomeCents: Long = 0,
@@ -35,7 +35,7 @@ data class ExpenseListUiState(
     val type: TransactionType = TransactionType.EXPENSE
 )
 
-class ExpenseListViewModel(
+class TransactionListViewModel(
     private val repository: TransactionRepository,
     clock: Clock = Clock.System,
     private val timeZone: TimeZone = TimeZone.currentSystemDefault()
@@ -46,11 +46,10 @@ class ExpenseListViewModel(
 
     private val selection = MutableStateFlow(SelectedMonth(currentYear, currentMonth))
 
-    val uiState: StateFlow<ExpenseListUiState> =
-        combine(repository.observeExpenses(), selection) { allTransactions, selected ->
+    val uiState: StateFlow<TransactionListUiState> =
+        combine(repository.observeTransactions(), selection) { allTransactions, selected ->
             val oldestYear = allTransactions.minOfOrNull { dateOf(it).year } ?: currentYear
             val availableYears = (minOf(oldestYear, currentYear)..currentYear).toList().reversed()
-            val availableMonths: List<Int> = AllMonths
 
             val transactionsInMonth =
                 allTransactions.filter { transaction ->
@@ -67,7 +66,7 @@ class ExpenseListViewModel(
                 .filter { it.type == TransactionType.INCOME }
                 .sumOf { it.amountCents }
 
-            ExpenseListUiState(
+            TransactionListUiState(
                 transactions = transactionsInMonth,
                 totalExpenseCents = totalExpenseCents,
                 totalIncomeCents = totalIncomeCents,
@@ -81,7 +80,7 @@ class ExpenseListViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue =
-            ExpenseListUiState(
+            TransactionListUiState(
                 selectedYear = currentYear,
                 selectedMonth = currentMonth
             )

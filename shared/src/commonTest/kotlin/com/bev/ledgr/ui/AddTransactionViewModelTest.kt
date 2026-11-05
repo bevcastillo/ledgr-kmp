@@ -9,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,7 +17,6 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddTransactionViewModelTest {
@@ -31,9 +31,7 @@ class AddTransactionViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun existingTransaction(
-        type: TransactionType = TransactionType.EXPENSE
-    ) = Transaction(
+    private fun existingTransaction(type: TransactionType = TransactionType.EXPENSE) = Transaction(
         id = 7,
         title = "Coffee",
         amountCents = 15075,
@@ -46,7 +44,7 @@ class AddTransactionViewModelTest {
     fun save_withEmptyFields_showsErrorsAndDoesNotSave() = runTest {
         val repository = FakeTransactionRepository()
         val viewModel = AddTransactionViewModel(
-            expenseId = null,
+            transactionId = null,
             repository = repository,
             type = null
         )
@@ -64,7 +62,7 @@ class AddTransactionViewModelTest {
     fun save_withZeroAmount_showsAmountError() = runTest {
         val repository = FakeTransactionRepository()
         val viewModel = AddTransactionViewModel(
-            expenseId = null,
+            transactionId = null,
             repository = repository,
             type = null
         )
@@ -80,7 +78,7 @@ class AddTransactionViewModelTest {
     @Test
     fun editingFields_clearsErrors() = runTest {
         val viewModel = AddTransactionViewModel(
-            expenseId = null,
+            transactionId = null,
             repository = FakeTransactionRepository(),
             type = null
         )
@@ -98,7 +96,7 @@ class AddTransactionViewModelTest {
     fun save_withValidInput_addsExpense() = runTest {
         val repository = FakeTransactionRepository()
         val viewModel = AddTransactionViewModel(
-            expenseId = null,
+            transactionId = null,
             repository = repository,
             type = null
         )
@@ -118,7 +116,7 @@ class AddTransactionViewModelTest {
     fun save_trimsTitleAndStoresBlankNoteAsNull() = runTest {
         val repository = FakeTransactionRepository()
         val viewModel = AddTransactionViewModel(
-            expenseId = null,
+            transactionId = null,
             repository = repository,
             type = null
         )
@@ -137,7 +135,7 @@ class AddTransactionViewModelTest {
     fun save_usesSelectedCategory() = runTest {
         val repository = FakeTransactionRepository()
         val viewModel = AddTransactionViewModel(
-            expenseId = null,
+            transactionId = null,
             repository = repository,
             type = null
         )
@@ -153,7 +151,7 @@ class AddTransactionViewModelTest {
     @Test
     fun newTransaction_withNullType_defaultsToExpense() = runTest {
         val viewModel = AddTransactionViewModel(
-            expenseId = null,
+            transactionId = null,
             repository = FakeTransactionRepository(),
             type = null
         )
@@ -165,7 +163,7 @@ class AddTransactionViewModelTest {
     fun newTransaction_withIncomeType_savesAsIncome() = runTest {
         val repository = FakeTransactionRepository()
         val viewModel = AddTransactionViewModel(
-            expenseId = null,
+            transactionId = null,
             repository = repository,
             type = TransactionType.INCOME
         )
@@ -184,7 +182,7 @@ class AddTransactionViewModelTest {
             listOf(existingTransaction(type = TransactionType.INCOME))
         )
         val viewModel = AddTransactionViewModel(
-            expenseId = 7,
+            transactionId = 7,
             repository = repository,
             type = null
         )
@@ -199,7 +197,7 @@ class AddTransactionViewModelTest {
     @Test
     fun editMode_loadsExistingExpense() = runTest {
         val viewModel = AddTransactionViewModel(
-            expenseId = 7,
+            transactionId = 7,
             repository = FakeTransactionRepository(listOf(existingTransaction())),
             type = null
         )
@@ -215,7 +213,7 @@ class AddTransactionViewModelTest {
     @Test
     fun editMode_withMissingId_staysInCreateMode() = runTest {
         val viewModel = AddTransactionViewModel(
-            expenseId = 99,
+            transactionId = 99,
             repository = FakeTransactionRepository(listOf(existingTransaction())),
             type = null
         )
@@ -229,7 +227,7 @@ class AddTransactionViewModelTest {
     fun editMode_save_updatesInsteadOfDuplicating() = runTest {
         val repository = FakeTransactionRepository(listOf(existingTransaction()))
         val viewModel = AddTransactionViewModel(
-            expenseId = 7,
+            transactionId = 7,
             repository = repository,
             type = null
         )
@@ -248,7 +246,7 @@ class AddTransactionViewModelTest {
     fun delete_removesExpense() = runTest {
         val repository = FakeTransactionRepository(listOf(existingTransaction()))
         val viewModel = AddTransactionViewModel(
-            expenseId = 7,
+            transactionId = 7,
             repository = repository,
             type = null
         )
@@ -263,7 +261,7 @@ class AddTransactionViewModelTest {
     fun delete_inCreateMode_doesNothing() = runTest {
         val repository = FakeTransactionRepository(listOf(existingTransaction()))
         val viewModel = AddTransactionViewModel(
-            expenseId = null,
+            transactionId = null,
             repository = repository,
             type = null
         )

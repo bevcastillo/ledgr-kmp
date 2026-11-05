@@ -4,20 +4,20 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 interface TransactionRepository {
-    fun observeExpenses(): Flow<List<Transaction>>
-    suspend fun addExpense(transaction: Transaction)
-    suspend fun deleteExpense(transaction: Transaction)
-    suspend fun getExpense(id: Long): Transaction?
+    fun observeTransactions(): Flow<List<Transaction>>
+    suspend fun addTransaction(transaction: Transaction)
+    suspend fun deleteTransaction(transaction: Transaction)
+    suspend fun getTransactionById(id: Long): Transaction?
     fun observeCategoryTotals(startMillis: Long, endMillis: Long): Flow<List<CategoryTotal>>
     fun observeTransactions(startMillis: Long, endMillis: Long): Flow<List<Transaction>>
-    fun observeEarliestExpenseMillis(): Flow<Long?>
+    fun observeEarliestTransactionMillis(): Flow<Long?>
 }
 
 class TransactionRepositoryImpl(private val dao: TransactionDao) : TransactionRepository {
-    override fun observeExpenses(): Flow<List<Transaction>> = dao.observeAll()
-    override suspend fun addExpense(transaction: Transaction) = dao.upsert(transaction)
-    override suspend fun deleteExpense(transaction: Transaction) = dao.delete(transaction)
-    override suspend fun getExpense(id: Long): Transaction? = dao.getById(id)
+    override fun observeTransactions(): Flow<List<Transaction>> = dao.observeAll()
+    override suspend fun addTransaction(transaction: Transaction) = dao.upsert(transaction)
+    override suspend fun deleteTransaction(transaction: Transaction) = dao.delete(transaction)
+    override suspend fun getTransactionById(id: Long): Transaction? = dao.getById(id)
     override fun observeCategoryTotals(
         startMillis: Long,
         endMillis: Long
@@ -38,5 +38,5 @@ class TransactionRepositoryImpl(private val dao: TransactionDao) : TransactionRe
     override fun observeTransactions(startMillis: Long, endMillis: Long): Flow<List<Transaction>> =
         dao.observeBetween(startMillis, endMillis)
 
-    override fun observeEarliestExpenseMillis(): Flow<Long?> = dao.observeEarliestDateMillis()
+    override fun observeEarliestTransactionMillis(): Flow<Long?> = dao.observeEarliestDateMillis()
 }

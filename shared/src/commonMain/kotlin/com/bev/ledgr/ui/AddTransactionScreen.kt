@@ -1,6 +1,5 @@
 package com.bev.ledgr.ui
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
@@ -70,7 +69,7 @@ fun AddTransactionRoute(
         if (state.isSaved) onDone()
     }
 
-    AddExpenseScreen(
+    AddTransactionScreen(
         state = state,
         onTitleChange = viewModel::onTitleChange,
         onAmountChange = viewModel::onAmountChange,
@@ -86,7 +85,7 @@ fun AddTransactionRoute(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddExpenseScreen(
+fun AddTransactionScreen(
     state: AddTransactionUiState,
     onTitleChange: (String) -> Unit,
     onAmountChange: (String) -> Unit,
@@ -176,10 +175,8 @@ fun AddExpenseScreen(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
-            AnimatedVisibility(
-                visible = state.type == TransactionType.EXPENSE,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+
+            if (state.type == TransactionType.EXPENSE) {
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)

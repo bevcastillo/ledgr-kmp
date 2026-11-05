@@ -313,7 +313,7 @@ fun EmptyTransactions(monthLabel: String) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "No expenses in $monthLabel",
+                text = "No transactions in $monthLabel",
                 style = MaterialTheme.typography.titleSmall,
                 color = Color.Black.copy(0.5f)
             )

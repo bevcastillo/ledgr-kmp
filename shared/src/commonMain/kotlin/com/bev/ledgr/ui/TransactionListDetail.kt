@@ -16,6 +16,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.TransactionType
@@ -89,8 +90,9 @@ private fun TwoPaneLayout(
             } else {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        "Select an expense or tap + to add one",
-                        style = MaterialTheme.typography.bodyMedium
+                        "Select a transaction or tap + to add one",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = Color.Black.copy(0.5f)
                     )
                 }
             }

@@ -18,11 +18,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -71,6 +69,7 @@ import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.CategoryTotal
 import com.bev.ledgr.data.TransactionType
 import com.bev.ledgr.ui.components.CategoryIconCircle
+import com.bev.ledgr.ui.components.EmptyTransactionsCard
 import com.bev.ledgr.ui.components.MonthSelector
 import com.bev.ledgr.ui.components.color
 import com.bev.ledgr.ui.components.icon
@@ -163,8 +162,7 @@ fun SummaryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(Modifier.height(8.dp))
@@ -186,7 +184,9 @@ fun SummaryScreen(
                     onMonthClick = { month ->
                         onMonthSelect(month)
                         onPeriodChange(SummaryPeriod.Monthly)
-                    }
+                    },
+                    hasTransactions =
+                    state.totals.isNotEmpty() && state.monthlyExpenseCents.isNotEmpty()
                 )
             }
         }
@@ -374,33 +374,36 @@ private fun MonthlyContent(
         }
         Spacer(Modifier.height(24.dp))
     } else {
-        Text(
-            text = "No expenses for this period",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(vertical = 32.dp)
-        )
+        EmptyTransactionsCard("No expenses for this period")
     }
 }
 
 @Composable
-private fun AnnualContent(state: SummaryUiState, onMonthClick: (Int) -> Unit) {
+private fun AnnualContent(
+    state: SummaryUiState,
+    onMonthClick: (Int) -> Unit,
+    hasTransactions: Boolean
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Spacer(Modifier.height(32.dp))
-        AnnualSection(
-            title = "Expenses",
-            totalLabel = "Total Spent",
-            monthlyCents = state.monthlyExpenseCents,
-            onMonthClick = onMonthClick
-        )
-        Spacer(Modifier.height(48.dp))
-        AnnualSection(
-            title = "Income",
-            totalLabel = "Total Received",
-            monthlyCents = state.monthlyIncomeCents,
-            onMonthClick = onMonthClick
-        )
-        Spacer(Modifier.height(24.dp))
+        if (hasTransactions) {
+            Spacer(Modifier.height(32.dp))
+            AnnualSection(
+                title = "Expenses",
+                totalLabel = "Total Spent",
+                monthlyCents = state.monthlyExpenseCents,
+                onMonthClick = onMonthClick
+            )
+            Spacer(Modifier.height(48.dp))
+            AnnualSection(
+                title = "Income",
+                totalLabel = "Total Received",
+                monthlyCents = state.monthlyIncomeCents,
+                onMonthClick = onMonthClick
+            )
+            Spacer(Modifier.height(24.dp))
+        } else {
+            EmptyTransactionsCard("No transactions for this period")
+        }
     }
 }
 

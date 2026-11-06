@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.TransactionType
+import com.bev.ledgr.ui.components.EmptyTransactionsCard
 import com.bev.ledgr.ui.components.TransactionsRow
 import com.bev.ledgr.ui.components.color
 import com.bev.ledgr.ui.components.illustrations
@@ -191,9 +192,7 @@ fun TransactionListScreen(
                     }
                 }
                 transactions.isEmpty() -> {
-                    EmptyTransactions(
-                        monthLabel = "No ${title.lowercase()} in $monthLabel"
-                    )
+                    EmptyTransactionsCard("No ${title.lowercase()} in $monthLabel")
                 }
                 else -> {
                     LazyColumn(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {

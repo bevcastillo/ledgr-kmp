@@ -27,12 +27,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.TransactionType
+import com.bev.ledgr.ui.components.EmptyTransactionsCard
 import com.bev.ledgr.ui.components.ExpandableFabMenu
 import com.bev.ledgr.ui.components.FabMenuItem
 import com.bev.ledgr.ui.components.MonthSelector
@@ -53,6 +57,7 @@ import com.bev.ledgr.ui.components.YearPicker
 import com.bev.ledgr.ui.theme.primaryColor
 import kotlin.math.abs
 import kotlin.time.Instant
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -109,7 +114,19 @@ fun HomeScreen(
     val recentTransactions = state.transactions.take(RECENT_TRANSACTION_LIMIT)
     val exceedsRecentLimit = state.transactions.size > RECENT_TRANSACTION_LIMIT
 
+    val scope = rememberCoroutineScope()
+
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    fun showSnackBarMessage(message: String) {
+        scope.launch {
+            snackBarHostState.currentSnackbarData?.dismiss()
+            snackBarHostState.showSnackbar(message)
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -170,20 +187,28 @@ fun HomeScreen(
                     incomeCents = state.totalIncomeCents,
                     expensesCents = state.totalExpenseCents,
                     onIncomeClick = {
-                        onTransactionClick(
-                            TransactionType.INCOME,
-                            null,
-                            state.selectedYear,
-                            state.selectedMonth
-                        )
+                        if (state.totalIncomeCents == 0L) {
+                            showSnackBarMessage("No income recorded yet")
+                        } else {
+                            onTransactionClick(
+                                TransactionType.INCOME,
+                                null,
+                                state.selectedYear,
+                                state.selectedMonth
+                            )
+                        }
                     },
                     onExpensesClick = {
-                        onTransactionClick(
-                            TransactionType.EXPENSE,
-                            null,
-                            state.selectedYear,
-                            state.selectedMonth
-                        )
+                        if (state.totalExpenseCents == 0L) {
+                            showSnackBarMessage("No expenses recorded yet")
+                        } else {
+                            onTransactionClick(
+                                TransactionType.EXPENSE,
+                                null,
+                                state.selectedYear,
+                                state.selectedMonth
+                            )
+                        }
                     }
                 )
 
@@ -232,8 +257,10 @@ fun HomeScreen(
                         }
                     }
                     state.transactions.isEmpty() -> {
-                        EmptyTransactions(
-                            monthLabel = "${monthName(state.selectedMonth)} ${state.selectedYear}"
+                        EmptyTransactionsCard(
+                            "No transactions in ${monthName(
+                                state.selectedMonth
+                            )} ${state.selectedYear}"
                         )
                     }
                     else -> {
@@ -300,22 +327,6 @@ fun SeeAllButton(onSeeAllClick: () -> Unit) {
                 contentDescription = null,
                 tint = primaryColor,
                 modifier = Modifier.size(ButtonDefaults.IconSize)
-            )
-        }
-    }
-}
-
-@Composable
-fun EmptyTransactions(monthLabel: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "No transactions in $monthLabel",
-                style = MaterialTheme.typography.titleSmall,
-                color = Color.Black.copy(0.5f)
             )
         }
     }

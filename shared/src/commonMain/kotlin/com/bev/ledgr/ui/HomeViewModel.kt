@@ -36,7 +36,7 @@ data class TransactionListUiState(
 )
 
 class TransactionListViewModel(
-    private val repository: TransactionRepository,
+    repository: TransactionRepository,
     clock: Clock = Clock.System,
     private val timeZone: TimeZone = TimeZone.currentSystemDefault()
 ) : ViewModel() {

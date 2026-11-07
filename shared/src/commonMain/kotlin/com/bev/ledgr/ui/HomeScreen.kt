@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -176,120 +177,137 @@ fun HomeScreen(
                 availableMonths = state.availableMonths,
                 onMonthSelected = onMonthSelected
             )
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp)
+
+            /* One LazyColumn for everything below the month selector, so the cards,
+            header and transactions scroll together. This keeps the screen usable
+            in landscape, where the cards alone can fill the visible height.
+            Bottom padding leaves room so the FAB doesn't cover the last item.
+            */
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    top = 16.dp,
+                    end = 16.dp,
+                    bottom = 88.dp
+                )
             ) {
-                Spacer(Modifier.height(16.dp))
-
-                SummaryCardsRow(
-                    incomeCents = state.totalIncomeCents,
-                    expensesCents = state.totalExpenseCents,
-                    onIncomeClick = {
-                        if (state.totalIncomeCents == 0L) {
-                            showSnackBarMessage("No income recorded yet")
-                        } else {
-                            onTransactionClick(
-                                TransactionType.INCOME,
-                                null,
-                                state.selectedYear,
-                                state.selectedMonth
-                            )
+                item(key = "summary_cards") {
+                    SummaryCardsRow(
+                        incomeCents = state.totalIncomeCents,
+                        expensesCents = state.totalExpenseCents,
+                        onIncomeClick = {
+                            if (state.totalIncomeCents == 0L) {
+                                showSnackBarMessage("No income recorded yet")
+                            } else {
+                                onTransactionClick(
+                                    TransactionType.INCOME,
+                                    null,
+                                    state.selectedYear,
+                                    state.selectedMonth
+                                )
+                            }
+                        },
+                        onExpensesClick = {
+                            if (state.totalExpenseCents == 0L) {
+                                showSnackBarMessage("No expenses recorded yet")
+                            } else {
+                                onTransactionClick(
+                                    TransactionType.EXPENSE,
+                                    null,
+                                    state.selectedYear,
+                                    state.selectedMonth
+                                )
+                            }
                         }
-                    },
-                    onExpensesClick = {
-                        if (state.totalExpenseCents == 0L) {
-                            showSnackBarMessage("No expenses recorded yet")
-                        } else {
-                            onTransactionClick(
-                                TransactionType.EXPENSE,
-                                null,
-                                state.selectedYear,
-                                state.selectedMonth
-                            )
-                        }
-                    }
-                )
-
-                Spacer(Modifier.height(16.dp))
-
-                RemainingBalanceCard(
-                    remainingBalance = formatCents(remainingBalance)
-                )
-
-                Spacer(Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Recent",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
                     )
+                }
 
-                    if (exceedsRecentLimit) {
-                        TextButton(onClick = {
-                            onTransactionClick(
-                                null,
-                                null,
-                                state.selectedYear,
-                                state.selectedMonth
-                            )
-                        }) {
-                            Text(text = "See All", color = primaryColor)
-                        }
+                item(key = "remaining_balance") {
+                    Column {
+                        Spacer(Modifier.height(16.dp))
+                        RemainingBalanceCard(
+                            remainingBalance = formatCents(remainingBalance)
+                        )
                     }
                 }
 
-                Spacer(Modifier.height(8.dp))
+                item(key = "recent_header") {
+                    Column {
+                        Spacer(Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Recent",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.SemiBold
+                            )
+
+                            if (exceedsRecentLimit) {
+                                TextButton(onClick = {
+                                    onTransactionClick(
+                                        null,
+                                        null,
+                                        state.selectedYear,
+                                        state.selectedMonth
+                                    )
+                                }) {
+                                    Text(text = "See All", color = primaryColor)
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+                }
 
                 when {
                     state.isLoading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
+                        item(key = "loading") {
+                            Box(
+                                modifier = Modifier
+                                    .fillParentMaxWidth()
+                                    .padding(vertical = 32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
                         }
                     }
                     state.transactions.isEmpty() -> {
-                        EmptyTransactionsCard(
-                            "No transactions in ${monthName(
-                                state.selectedMonth
-                            )} ${state.selectedYear}"
-                        )
+                        item(key = "empty") {
+                            EmptyTransactionsCard(
+                                "No transactions in ${monthName(
+                                    state.selectedMonth
+                                )} ${state.selectedYear}"
+                            )
+                        }
                     }
                     else -> {
-                        LazyColumn(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            itemsIndexed(recentTransactions, key = { _, transaction ->
-                                transaction.id
-                            }) { index, transaction ->
-                                TransactionsRow(
-                                    transaction = transaction,
-                                    onClick = { onTransactionItemClick(transaction.id) },
-                                    showDivider = index < recentTransactions.lastIndex
-                                )
-                            }
+                        itemsIndexed(recentTransactions, key = { _, transaction ->
+                            transaction.id
+                        }) { index, transaction ->
+                            TransactionsRow(
+                                transaction = transaction,
+                                onClick = { onTransactionItemClick(transaction.id) },
+                                showDivider = index < recentTransactions.lastIndex
+                            )
+                        }
 
-                            if (exceedsRecentLimit) {
-                                item(key = "see_all") {
-                                    SeeAllButton(
-                                        onSeeAllClick = {
-                                            onTransactionClick(
-                                                null,
-                                                null,
-                                                state.selectedYear,
-                                                state.selectedMonth
-                                            )
-                                        }
-                                    )
-                                }
+                        if (exceedsRecentLimit) {
+                            item(key = "see_all") {
+                                SeeAllButton(
+                                    onSeeAllClick = {
+                                        onTransactionClick(
+                                            null,
+                                            null,
+                                            state.selectedYear,
+                                            state.selectedMonth
+                                        )
+                                    }
+                                )
                             }
                         }
                     }
@@ -349,7 +367,7 @@ fun formatCents(cents: Long): String {
     return "$sign₱$pesos.$centavos"
 }
 
-/** 1760054400000 -> "10/10/26" (month/day/two-digit year, local time zone). */
+/** 1760054400000 -> "10/10/25" (month/day/two-digit year, local time zone). */
 fun formatShortDate(millis: Long): String {
     val date = Instant.fromEpochMilliseconds(millis)
         .toLocalDateTime(TimeZone.currentSystemDefault())

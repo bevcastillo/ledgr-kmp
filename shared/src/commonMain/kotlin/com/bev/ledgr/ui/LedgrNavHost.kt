@@ -19,10 +19,13 @@ data class TransactionFormDestination(val expenseId: Long? = null, val type: Str
 object SummaryDestination
 
 // type = null means All Transactions for the selected month/year
+// category = null means all categories
+// type and category are passed as enum names (String) because custom types
+// need a NavType on iOS (Kotlin/Native has no reflection to infer one)
 @Serializable
 data class TransactionListDestination(
     val type: String? = null,
-    val category: Category? = null,
+    val category: String? = null,
     val year: Int,
     val month: Int
 )
@@ -48,7 +51,7 @@ fun LedgrNavHost() {
                     navController.navigate(
                         TransactionListDestination(
                             type = type?.name,
-                            category = category,
+                            category = category?.name,
                             year = year,
                             month = month
                         )
@@ -71,7 +74,7 @@ fun LedgrNavHost() {
                     navController.navigate(
                         TransactionListDestination(
                             type = type?.name,
-                            category = category,
+                            category = category?.name,
                             year = year,
                             month = month
                         )
@@ -86,7 +89,7 @@ fun LedgrNavHost() {
                 type = destination.type?.let { TransactionType.valueOf(it) },
                 year = destination.year,
                 month = destination.month,
-                category = destination.category,
+                category = destination.category?.let { Category.valueOf(it) },
                 onTransactionClick = { id ->
                     navController.navigate(TransactionFormDestination(expenseId = id))
                 },

@@ -179,7 +179,7 @@ fun SummaryScreen(
                     onCategoryClick = onCategoryClick,
                     hasExpenses = state.totals.isNotEmpty()
                 )
-                SummaryPeriod.Annually -> AnnualContent(
+                SummaryPeriod.Annual -> AnnualContent(
                     state = state,
                     onMonthClick = { month ->
                         onMonthSelect(month)

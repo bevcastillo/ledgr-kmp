@@ -24,7 +24,7 @@ import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.todayIn
 
-enum class SummaryPeriod { Monthly, Annually }
+enum class SummaryPeriod { Monthly, Annual }
 
 private val EmptyMonths: List<Long> = List(12) { 0L }
 
@@ -87,7 +87,7 @@ class SummaryViewModel(private val repository: TransactionRepository, clock: Clo
                             )
                         }
 
-                SummaryPeriod.Annually ->
+                SummaryPeriod.Annual ->
                     repository.observeTransactions(startMillis, endMillis)
                         .map { transactions ->
                             SelectionData(
@@ -140,7 +140,7 @@ class SummaryViewModel(private val repository: TransactionRepository, clock: Clo
             range.startMillis to range.endMillis
         }
 
-        SummaryPeriod.Annually -> {
+        SummaryPeriod.Annual -> {
             // January's start through December's end covers the whole year
             monthRange(sel.year, 1).startMillis to monthRange(sel.year, 12).endMillis
         }

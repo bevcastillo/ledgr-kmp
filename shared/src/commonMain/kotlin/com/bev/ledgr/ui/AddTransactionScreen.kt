@@ -4,14 +4,17 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
@@ -131,80 +134,90 @@ fun AddTransactionScreen(
             )
         }
     ) { padding ->
-        Column(
+        // BoxWithConstraints gives us the visible height (maxHeight). The Column is at
+        // least that tall, so the weighted Spacer can push the buttons to the bottom when
+        // everything fits; when it doesn't (e.g. landscape), the Column grows and scrolls.
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedTextField(
-                value = state.title,
-                onValueChange = onTitleChange,
-                label = { Text("Title") },
-                isError = state.titleError != null,
-                supportingText = state.titleError?.let { { Text(it) } },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = state.amount,
-                onValueChange = { input ->
-                    if (isValidAmountInput(input)) onAmountChange(input)
-                },
-                label = { Text("Amount") },
-                prefix = { Text("₱") },
-                isError = state.amountError != null,
-                supportingText = state.amountError?.let { { Text(it) } },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = remember { AmountVisualTransformation() }
-            )
-            OutlinedTextField(
-                value = formatDate(state.dateMillis),
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Date") },
-                trailingIcon = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Filled.DateRange, contentDescription = "Pick a date")
-                    }
-                },
-                interactionSource = dateFieldInteraction,
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(min = maxHeight)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedTextField(
+                    value = state.title,
+                    onValueChange = onTitleChange,
+                    label = { Text("Title") },
+                    isError = state.titleError != null,
+                    supportingText = state.titleError?.let { { Text(it) } },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = state.amount,
+                    onValueChange = { input ->
+                        if (isValidAmountInput(input)) onAmountChange(input)
+                    },
+                    label = { Text("Amount") },
+                    prefix = { Text("₱") },
+                    isError = state.amountError != null,
+                    supportingText = state.amountError?.let { { Text(it) } },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    visualTransformation = remember { AmountVisualTransformation() }
+                )
+                OutlinedTextField(
+                    value = formatDate(state.dateMillis),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Date") },
+                    trailingIcon = {
+                        IconButton(onClick = { showDatePicker = true }) {
+                            Icon(Icons.Filled.DateRange, contentDescription = "Pick a date")
+                        }
+                    },
+                    interactionSource = dateFieldInteraction,
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            if (state.type == TransactionType.EXPENSE) {
-                Row(
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Categories.forEach { category ->
-                        FilterChip(
-                            selected = state.category == category,
-                            onClick = { onCategoryChange(category) },
-                            label = { Text(category) }
-                        )
+                if (state.type == TransactionType.EXPENSE) {
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Categories.forEach { category ->
+                            FilterChip(
+                                selected = state.category == category,
+                                onClick = { onCategoryChange(category) },
+                                label = { Text(category) }
+                            )
+                        }
                     }
                 }
-            }
-            OutlinedTextField(
-                value = state.note,
-                onValueChange = onNoteChange,
-                label = { Text("Note (optional)") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.weight(1f))
-            SaveButton(
-                onClick = onSave,
-                text = "Save"
-            )
-            if (state.isEditing) {
-                DeleteButton(
-                    onClick = onDelete
+                OutlinedTextField(
+                    value = state.note,
+                    onValueChange = onNoteChange,
+                    label = { Text("Note (optional)") },
+                    modifier = Modifier.fillMaxWidth()
                 )
+                Spacer(Modifier.weight(1f))
+                SaveButton(
+                    onClick = onSave,
+                    text = "Save"
+                )
+                if (state.isEditing) {
+                    DeleteButton(
+                        onClick = onDelete
+                    )
+                }
             }
         }
     }

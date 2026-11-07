@@ -8,18 +8,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowRightAlt
 import androidx.compose.material3.ButtonDefaults
@@ -178,21 +179,22 @@ fun HomeScreen(
                 onMonthSelected = onMonthSelected
             )
 
-            /* One LazyColumn for everything below the month selector, so the cards,
-            header and transactions scroll together. This keeps the screen usable
-            in landscape, where the cards alone can fill the visible height.
-            Bottom padding leaves room so the FAB doesn't cover the last item.
-            */
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    top = 16.dp,
-                    end = 16.dp,
-                    bottom = 88.dp
-                )
-            ) {
-                item(key = "summary_cards") {
+            /*
+             * Everything below the month selector scrolls together, so the screen stays
+             * usable in landscape. The Column is at least as tall as the visible area
+             * (heightIn(min = maxHeight)), which gives the weighted Spacers real space to
+             * fill: they center the empty/loading state in the lower part of the screen.
+             * When content is taller than the screen, the Spacers shrink to zero and the
+             * Column scrolls. Bottom padding keeps the FAB from covering the last item.
+             */
+            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .heightIn(min = maxHeight)
+                        .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp)
+                ) {
                     SummaryCardsRow(
                         incomeCents = state.totalIncomeCents,
                         expensesCents = state.totalExpenseCents,
@@ -221,83 +223,72 @@ fun HomeScreen(
                             }
                         }
                     )
-                }
 
-                item(key = "remaining_balance") {
-                    Column {
-                        Spacer(Modifier.height(16.dp))
-                        RemainingBalanceCard(
-                            remainingBalance = formatCents(remainingBalance)
+                    Spacer(Modifier.height(16.dp))
+
+                    RemainingBalanceCard(
+                        remainingBalance = formatCents(remainingBalance)
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Recent",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold
                         )
-                    }
-                }
-
-                item(key = "recent_header") {
-                    Column {
-                        Spacer(Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Recent",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.SemiBold
-                            )
-
-                            if (exceedsRecentLimit) {
-                                TextButton(onClick = {
-                                    onTransactionClick(
-                                        null,
-                                        null,
-                                        state.selectedYear,
-                                        state.selectedMonth
-                                    )
-                                }) {
-                                    Text(text = "See All", color = primaryColor)
-                                }
-                            }
-                        }
-                        Spacer(Modifier.height(8.dp))
-                    }
-                }
-
-                when {
-                    state.isLoading -> {
-                        item(key = "loading") {
-                            Box(
-                                modifier = Modifier
-                                    .fillParentMaxWidth()
-                                    .padding(vertical = 32.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
-                    state.transactions.isEmpty() -> {
-                        item(key = "empty") {
-                            EmptyTransactionsCard(
-                                "No transactions in ${monthName(
-                                    state.selectedMonth
-                                )} ${state.selectedYear}"
-                            )
-                        }
-                    }
-                    else -> {
-                        itemsIndexed(recentTransactions, key = { _, transaction ->
-                            transaction.id
-                        }) { index, transaction ->
-                            TransactionsRow(
-                                transaction = transaction,
-                                onClick = { onTransactionItemClick(transaction.id) },
-                                showDivider = index < recentTransactions.lastIndex
-                            )
-                        }
 
                         if (exceedsRecentLimit) {
-                            item(key = "see_all") {
+                            TextButton(onClick = {
+                                onTransactionClick(
+                                    null,
+                                    null,
+                                    state.selectedYear,
+                                    state.selectedMonth
+                                )
+                            }) {
+                                Text(text = "See All", color = primaryColor)
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    when {
+                        state.isLoading -> {
+                            Spacer(Modifier.weight(1f))
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                            Spacer(Modifier.weight(1f))
+                        }
+                        state.transactions.isEmpty() -> {
+                            Spacer(Modifier.weight(1f))
+                            EmptyTransactionsCard(
+                                message = "No transactions in ${monthName(
+                                    state.selectedMonth
+                                )} ${state.selectedYear}",
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(Modifier.weight(1f))
+                        }
+                        else -> {
+                            // Home shows at most RECENT_TRANSACTION_LIMIT rows, so a plain
+                            // Column is enough; a LazyColumn isn't needed here.
+                            recentTransactions.forEachIndexed { index, transaction ->
+                                TransactionsRow(
+                                    transaction = transaction,
+                                    onClick = { onTransactionItemClick(transaction.id) },
+                                    showDivider = index < recentTransactions.lastIndex
+                                )
+                            }
+
+                            if (exceedsRecentLimit) {
                                 SeeAllButton(
                                     onSeeAllClick = {
                                         onTransactionClick(

@@ -12,21 +12,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun EmptyTransactionsCard(message: String) {
+fun EmptyTransactionsCard(
+    message: String,
+    modifier: Modifier = Modifier
+) {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Text(
-                text = message,
-                style = MaterialTheme.typography.titleSmall,
-                color = Color.Black.copy(0.5f)
-            )
-        }
+        Text(
+            text = message,
+            style = MaterialTheme.typography.titleSmall,
+            color = Color.Black.copy(0.5f)
+        )
     }
 }

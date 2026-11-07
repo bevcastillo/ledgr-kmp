@@ -39,7 +39,7 @@ fun LedgrNavHost() {
         startDestination = HomeDestination
     ) {
         composable<HomeDestination> {
-            TransactionListDetail(
+            HomeAdaptiveLayout(
                 onAddClickCompact = { type ->
                     navController.navigate(TransactionFormDestination(type = type.name))
                 },

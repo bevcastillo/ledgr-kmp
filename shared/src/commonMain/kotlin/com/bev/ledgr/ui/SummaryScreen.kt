@@ -6,7 +6,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,12 +17,16 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -158,36 +164,49 @@ fun SummaryScreen(
             )
         }
     ) { padding ->
-        Column(
+        /*
+         * The whole screen scrolls, so it stays usable in landscape. The Column is at least
+         * as tall as the visible area (heightIn(min = maxHeight)), which gives the weighted
+         * Spacers in the empty states real space to fill, centering the empty message.
+         * When content is taller than the screen, those Spacers shrink to zero and it scrolls.
+         */
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(8.dp))
-            PeriodToggle(
-                selected = state.period,
-                onSelect = onPeriodChange
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(min = maxHeight)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(Modifier.height(8.dp))
+                PeriodToggle(
+                    selected = state.period,
+                    onSelect = onPeriodChange
+                )
 
-            when (state.period) {
-                SummaryPeriod.Monthly -> MonthlyContent(
-                    state = state,
-                    onMonthSelect = onMonthSelect,
-                    onSeeAllTransactions = onSeeAllTransactions,
-                    onCategoryClick = onCategoryClick,
-                    hasExpenses = state.totals.isNotEmpty()
-                )
-                SummaryPeriod.Annual -> AnnualContent(
-                    state = state,
-                    onMonthClick = { month ->
-                        onMonthSelect(month)
-                        onPeriodChange(SummaryPeriod.Monthly)
-                    },
-                    hasTransactions =
-                    state.totals.isNotEmpty() && state.monthlyExpenseCents.isNotEmpty()
-                )
+                when (state.period) {
+                    SummaryPeriod.Monthly -> MonthlyContent(
+                        state = state,
+                        onMonthSelect = onMonthSelect,
+                        onSeeAllTransactions = onSeeAllTransactions,
+                        onCategoryClick = onCategoryClick,
+                        hasExpenses = state.totals.isNotEmpty()
+                    )
+                    SummaryPeriod.Annual -> AnnualContent(
+                        state = state,
+                        onMonthClick = { month ->
+                            onMonthSelect(month)
+                            onPeriodChange(SummaryPeriod.Monthly)
+                        },
+                        hasTransactions =
+                            state.totals.isNotEmpty() && state.monthlyExpenseCents.isNotEmpty()
+                    )
+                }
             }
         }
     }
@@ -309,8 +328,9 @@ private fun PeriodToggle(selected: SummaryPeriod, onSelect: (SummaryPeriod) -> U
     }
 }
 
+// ColumnScope receiver so the empty state can use weighted Spacers to center itself.
 @Composable
-private fun MonthlyContent(
+private fun ColumnScope.MonthlyContent(
     state: SummaryUiState,
     onMonthSelect: (Int) -> Unit,
     onSeeAllTransactions: (
@@ -333,7 +353,10 @@ private fun MonthlyContent(
         Spacer(Modifier.height(32.dp))
         SpendingDonut(
             totals = state.totals,
-            modifier = Modifier.fillMaxWidth(0.66f)
+            // Cap the base width so the donut doesn't fill the whole screen in landscape.
+            modifier = Modifier
+                .widthIn(max = 360.dp)
+                .fillMaxWidth(0.66f)
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
@@ -374,36 +397,45 @@ private fun MonthlyContent(
         }
         Spacer(Modifier.height(24.dp))
     } else {
-        EmptyTransactionsCard("No expenses for this period")
+        Spacer(Modifier.weight(1f))
+        EmptyTransactionsCard(
+            message = "No expenses for this period",
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.weight(1f))
     }
 }
 
+// ColumnScope receiver so the empty state can use weighted Spacers to center itself.
 @Composable
-private fun AnnualContent(
+private fun ColumnScope.AnnualContent(
     state: SummaryUiState,
     onMonthClick: (Int) -> Unit,
     hasTransactions: Boolean
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        if (hasTransactions) {
-            Spacer(Modifier.height(32.dp))
-            AnnualSection(
-                title = "Expenses",
-                totalLabel = "Total Spent",
-                monthlyCents = state.monthlyExpenseCents,
-                onMonthClick = onMonthClick
-            )
-            Spacer(Modifier.height(48.dp))
-            AnnualSection(
-                title = "Income",
-                totalLabel = "Total Received",
-                monthlyCents = state.monthlyIncomeCents,
-                onMonthClick = onMonthClick
-            )
-            Spacer(Modifier.height(24.dp))
-        } else {
-            EmptyTransactionsCard("No transactions for this period")
-        }
+    if (hasTransactions) {
+        Spacer(Modifier.height(32.dp))
+        AnnualSection(
+            title = "Expenses",
+            totalLabel = "Total Spent",
+            monthlyCents = state.monthlyExpenseCents,
+            onMonthClick = onMonthClick
+        )
+        Spacer(Modifier.height(48.dp))
+        AnnualSection(
+            title = "Income",
+            totalLabel = "Total Received",
+            monthlyCents = state.monthlyIncomeCents,
+            onMonthClick = onMonthClick
+        )
+        Spacer(Modifier.height(24.dp))
+    } else {
+        Spacer(Modifier.weight(1f))
+        EmptyTransactionsCard(
+            message = "No transactions for this period",
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.weight(1f))
     }
 }
 

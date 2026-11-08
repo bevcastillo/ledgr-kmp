@@ -18,8 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.bev.ledgr.ui.formatCents
 import com.bev.ledgr.ui.theme.primaryColor
+import com.bev.ledgr.util.AmountFormatter
 
 @Composable
 fun SummaryCardsRow(
@@ -72,7 +72,7 @@ private fun SummaryCard(label: String, amountCents: Long, onClick: () -> Unit, m
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = formatCents(amountCents),
+                text = AmountFormatter.formatCentavos(centavos = amountCents, compact = true),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,

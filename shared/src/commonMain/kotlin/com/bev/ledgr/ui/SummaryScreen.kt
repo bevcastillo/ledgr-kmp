@@ -204,7 +204,7 @@ fun SummaryScreen(
                             onPeriodChange(SummaryPeriod.Monthly)
                         },
                         hasTransactions =
-                            state.totals.isNotEmpty() && state.monthlyExpenseCents.isNotEmpty()
+                            state.monthlyIncomeCents.isNotEmpty() && state.monthlyExpenseCents.isNotEmpty()
                     )
                 }
             }

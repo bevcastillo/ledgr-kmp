@@ -204,7 +204,7 @@ fun TransactionListScreen(
                                 transaction = transaction,
                                 onClick = { onTransactionClick(transaction.id) },
                                 showDivider = index < transactions.lastIndex,
-                                showCategoryPill = false
+                                showCategoryPill = category == null
                             )
                         }
                     }

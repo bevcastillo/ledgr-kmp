@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
 import com.bev.ledgr.ui.theme.SquircleShape
+import com.bev.ledgr.ui.theme.primaryColor
 import com.bev.ledgr.ui.theme.primaryDark
 import com.bev.ledgr.ui.theme.primaryLight
 
@@ -28,7 +29,7 @@ fun SaveButton(text: String? = "Save", onClick: () -> Unit, enabled: Boolean = t
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
-    val baseColor = primaryDark
+    val baseColor = primaryColor
     val pressedColor = lerp(baseColor, Color.Black, 0.15f)
 
     val containerColor by animateColorAsState(

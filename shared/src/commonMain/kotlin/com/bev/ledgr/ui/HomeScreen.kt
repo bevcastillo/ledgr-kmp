@@ -278,8 +278,6 @@ fun HomeScreen(
                             Spacer(Modifier.weight(1f))
                         }
                         else -> {
-                            // Home shows at most RECENT_TRANSACTION_LIMIT rows, so a plain
-                            // Column is enough; a LazyColumn isn't needed here.
                             recentTransactions.forEachIndexed { index, transaction ->
                                 TransactionsRow(
                                     transaction = transaction,

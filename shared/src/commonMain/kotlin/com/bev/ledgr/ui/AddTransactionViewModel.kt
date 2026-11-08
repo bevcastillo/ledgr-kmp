@@ -25,6 +25,7 @@ val Categories = listOf(
     "Entertainment",
     "Debt payments",
     "Pets",
+    "Home Improvements",
     "Others"
 )
 

@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.TransactionType
 import com.bev.ledgr.ui.components.AmountVisualTransformation
 import com.bev.ledgr.ui.components.DeleteButton
@@ -95,7 +96,7 @@ fun AddTransactionScreen(
     state: AddTransactionUiState,
     onTitleChange: (String) -> Unit,
     onAmountChange: (String) -> Unit,
-    onCategoryChange: (String) -> Unit,
+    onCategoryChange: (Category) -> Unit,
     onNoteChange: (String) -> Unit,
     onDateChange: (Long) -> Unit,
     onSave: () -> Unit,
@@ -198,11 +199,11 @@ fun AddTransactionScreen(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Categories.forEach { category ->
+                        Category.entries.forEach { category ->
                             FilterChip(
                                 selected = state.category == category,
                                 onClick = { onCategoryChange(category) },
-                                label = { Text(category) }
+                                label = { Text(category.label) }
                             )
                         }
                     }

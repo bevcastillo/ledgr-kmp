@@ -10,7 +10,7 @@ data class Transaction(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val title: String,
     val amountCents: Long,
-    val category: String? = null,
+    val category: Category? = null,
     val dateMillis: Long,
     val note: String? = null,
     val type: TransactionType

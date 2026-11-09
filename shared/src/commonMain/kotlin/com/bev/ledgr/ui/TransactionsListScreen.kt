@@ -88,7 +88,11 @@ fun TransactionListScreen(
     val title: String = when (type) {
         TransactionType.EXPENSE -> "Expenses"
         TransactionType.INCOME -> "Income"
-        null -> "All $categoryLabel"
+        null -> if (category == Category.OTHERS) {
+            categoryLabel
+        } else {
+            "All $categoryLabel"
+        }
     }
 
     val cardLabel: String = when (type) {
@@ -116,8 +120,7 @@ fun TransactionListScreen(
     val transactions = remember(state.transactions, type, category) {
         state.transactions.filter { transaction ->
             val matchesType = type == null || transaction.type == type
-            val matchesCategory = category == null ||
-                transaction.category.let(Category::fromStored) == category
+            val matchesCategory = category == null || transaction.category == category
             matchesType && matchesCategory
         }
     }

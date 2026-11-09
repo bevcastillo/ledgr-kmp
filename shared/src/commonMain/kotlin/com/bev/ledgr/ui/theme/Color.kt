@@ -17,3 +17,6 @@ val entertainmentColor = Color(0xFFC026D3) // fuchsia
 val debtPaymentColor = Color(0xFF475569) // slate
 val petsColor = Color(0xFF795548) // brown
 val othersColor = Color(0xFF6B7280) // gray
+val housingColor = Color(0xFF0891B2) // cyan
+val giftsDonationsColor = Color(0xFFCA8A04) // gold
+val utilitiesColor = Color(0xFF64748B) // blue-gray

@@ -31,7 +31,7 @@ object AmountFormatter {
         Scale(1_000_000_000_000.0, "T"),
         Scale(1_000_000_000.0, "B"),
         Scale(1_000_000.0, "M"),
-        Scale(1_000.0, "K"),
+        Scale(1_000.0, "K")
     )
 
     /**
@@ -44,7 +44,7 @@ object AmountFormatter {
         amount: Double,
         currencySymbol: String = "₱",
         compact: Boolean = false,
-        compactThreshold: Double = 100_000.0,
+        compactThreshold: Double = 100_000.0
     ): String {
         val absolute = abs(amount)
         val isNegative = amount < 0 && (absolute * 100).roundToLong() > 0
@@ -66,12 +66,12 @@ object AmountFormatter {
         centavos: Long,
         currencySymbol: String = "₱",
         compact: Boolean = false,
-        compactThreshold: Double = 100_000.0,
+        compactThreshold: Double = 100_000.0
     ): String = format(
         amount = centavos / 100.0,
         currencySymbol = currencySymbol,
         compact = compact,
-        compactThreshold = compactThreshold,
+        compactThreshold = compactThreshold
     )
 
     private fun compactBody(absolute: Double): String {
@@ -112,10 +112,9 @@ object AmountFormatter {
     }
 
     // 1234666777 -> "1,234,666,777"
-    private fun groupThousands(value: Long): String =
-        value.toString()
-            .reversed()
-            .chunked(3)
-            .joinToString(",")
-            .reversed()
+    private fun groupThousands(value: Long): String = value.toString()
+        .reversed()
+        .chunked(3)
+        .joinToString(",")
+        .reversed()
 }

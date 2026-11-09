@@ -12,23 +12,16 @@ enum class Category(val key: String, val label: String) {
     SHOPPING("shopping", "Shopping"),
     PERSONAL_CARE("personal_care", "Personal care"),
     FAMILY("family", "Family"),
-    HEALTH("health", "Health"),
+    HEALTHCARE("health", "Healthcare"),
     ENTERTAINMENT("entertainment", "Entertainment"),
-    DEBT_PAYMENTS("debt_payments", "Debt payments"),
+    LOANS_GIVEN("loans_given", "Loans Given"),
     PETS("pets", "Pets"),
+    HOUSING("housing", "Housing"),
+    GIFTS_DONATIONS("gifts", "Gifts and Donation"),
+    UTILITIES("utilities", "Utilities"),
     OTHERS("others", "Others");
 
     companion object {
-        fun fromStored(value: String?): Category {
-            entries.firstOrNull { it.key == value }?.let { return it }
-            entries.firstOrNull { it.label.equals(value, ignoreCase = true) }?.let { return it }
-
-            return when (value?.lowercase()) {
-                "personal" -> PERSONAL_CARE
-                "subscriptions" -> BILLS
-                "credit card", "loans" -> DEBT_PAYMENTS
-                else -> OTHERS
-            }
-        }
+        fun fromStored(value: String?): Category = entries.firstOrNull { it.key == value } ?: OTHERS
     }
 }

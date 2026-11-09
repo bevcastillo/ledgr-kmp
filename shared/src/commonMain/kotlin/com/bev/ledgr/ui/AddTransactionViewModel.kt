@@ -2,6 +2,7 @@ package com.bev.ledgr.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.Transaction
 import com.bev.ledgr.data.TransactionRepository
 import com.bev.ledgr.data.TransactionType
@@ -12,27 +13,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-val Categories = listOf(
-    "Food",
-    "Groceries",
-    "Transport",
-    "Bills",
-    "Education",
-    "Shopping",
-    "Personal care",
-    "Family",
-    "Health",
-    "Entertainment",
-    "Debt payments",
-    "Pets",
-    "Home Improvements",
-    "Others"
-)
-
 data class AddTransactionUiState(
     val title: String = "",
     val amount: String = "",
-    val category: String = Categories.first(),
+    val category: Category = Category.FOOD,
     val note: String = "",
     val dateMillis: Long = Clock.System.now().toEpochMilliseconds(),
     val titleError: String? = null,
@@ -64,7 +48,7 @@ class AddTransactionViewModel(
                     it.copy(
                         title = transaction.title,
                         amount = centsToInput(transaction.amountCents),
-                        category = transaction.category ?: Categories.first(),
+                        category = transaction.category ?: Category.FOOD,
                         note = transaction.note.orEmpty(),
                         dateMillis = transaction.dateMillis,
                         isEditing = true,
@@ -80,7 +64,7 @@ class AddTransactionViewModel(
     fun onAmountChange(value: String) =
         _uiState.update { it.copy(amount = value, amountError = null) }
 
-    fun onCategoryChange(value: String) = _uiState.update { it.copy(category = value) }
+    fun onCategoryChange(value: Category) = _uiState.update { it.copy(category = value) }
 
     fun onNoteChange(value: String) = _uiState.update { it.copy(note = value) }
 
@@ -97,7 +81,13 @@ class AddTransactionViewModel(
             else -> null
         }
 
-        val category: String? = if (state.type == TransactionType.EXPENSE) state.category else null
+        val category: Category? = if (state.type ==
+            TransactionType.EXPENSE
+        ) {
+            state.category
+        } else {
+            null
+        }
 
         if (titleError != null || amountError != null) {
             _uiState.update { it.copy(titleError = titleError, amountError = amountError) }

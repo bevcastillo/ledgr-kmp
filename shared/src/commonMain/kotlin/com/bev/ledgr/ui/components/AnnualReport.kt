@@ -47,8 +47,8 @@ import kotlin.math.log10
 import kotlin.math.pow
 import kotlin.math.roundToLong
 
-private val IncomeBarColor = Color(0xFF2F4E8F)
-private val ExpenseBarColor = Color(0xFF4A7F46)
+private val IncomeBarColor = Color(0xFF0D9488)
+private val ExpenseBarColor = Color(0xFF4E884D)
 
 private val BarShape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
 
@@ -202,7 +202,7 @@ private fun Stat(
     ) {
         Text(
             text = value,
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold,
             color = valueColor,
             maxLines = 1,
@@ -210,8 +210,8 @@ private fun Stat(
         Spacer(Modifier.height(2.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
         )
     }
 }

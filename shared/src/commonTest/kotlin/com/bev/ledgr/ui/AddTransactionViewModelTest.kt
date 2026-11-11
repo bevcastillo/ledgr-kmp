@@ -1,5 +1,6 @@
 package com.bev.ledgr.ui
 
+import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.FakeTransactionRepository
 import com.bev.ledgr.data.Transaction
 import com.bev.ledgr.data.TransactionType
@@ -35,7 +36,7 @@ class AddTransactionViewModelTest {
         id = 7,
         title = "Coffee",
         amountCents = 15075,
-        category = "Food",
+        category = Category.FOOD,
         dateMillis = 1000,
         type = type
     )
@@ -142,10 +143,10 @@ class AddTransactionViewModelTest {
 
         viewModel.onTitleChange("Bus fare")
         viewModel.onAmountChange("13")
-        viewModel.onCategoryChange("Transport")
+        viewModel.onCategoryChange(Category.TRANSPORTATION)
         viewModel.onSave()
 
-        assertEquals("Transport", repository.current.first().category)
+        assertEquals(Category.TRANSPORTATION, repository.current.first().category)
     }
 
     @Test
@@ -206,7 +207,7 @@ class AddTransactionViewModelTest {
         assertTrue(state.isEditing)
         assertEquals("Coffee", state.title)
         assertEquals("150.75", state.amount)
-        assertEquals("Food", state.category)
+        assertEquals(Category.FOOD, state.category)
         assertEquals(1000L, state.dateMillis)
     }
 

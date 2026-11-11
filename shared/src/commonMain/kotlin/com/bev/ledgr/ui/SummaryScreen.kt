@@ -1,10 +1,8 @@
 package com.bev.ledgr.ui
 
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -32,7 +30,6 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,55 +44,41 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.CategoryTotal
 import com.bev.ledgr.data.TransactionType
-import com.bev.ledgr.ui.components.CategoryIconCircle
+import com.bev.ledgr.ui.components.AnnualReport
+import com.bev.ledgr.ui.components.CategoryRowItem
+import com.bev.ledgr.ui.components.Chevron
+import com.bev.ledgr.ui.components.ChevronDirection
 import com.bev.ledgr.ui.components.EmptyTransactionsCard
 import com.bev.ledgr.ui.components.MonthSelector
 import com.bev.ledgr.ui.components.color
-import com.bev.ledgr.ui.components.icon
+import com.bev.ledgr.ui.components.formatPeso
 import com.bev.ledgr.ui.theme.primaryColor
 import com.bev.ledgr.ui.theme.primaryDark
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
-import org.koin.compose.viewmodel.koinViewModel
 
 private const val MIN_LABEL_FRACTION = 0.05f
 
 private val AllMonths = (1..12).toList()
-private val MonthInitials = listOf("J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D")
-
-private val MonthNames = listOf(
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-)
 
 @Composable
 fun SummaryRoute(
@@ -197,16 +180,16 @@ fun SummaryScreen(
                         onCategoryClick = onCategoryClick,
                         hasExpenses = state.totals.isNotEmpty()
                     )
-                    SummaryPeriod.Annual -> AnnualContent(
-                        state = state,
-                        onMonthClick = { month ->
-                            onMonthSelect(month)
-                            onPeriodChange(SummaryPeriod.Monthly)
-                        },
-                        hasTransactions =
-                        state.monthlyIncomeCents.isNotEmpty() &&
-                            state.monthlyExpenseCents.isNotEmpty()
-                    )
+
+                    SummaryPeriod.Annual -> {
+                        Spacer(Modifier.height(8.dp))
+                        AnnualReport(
+                            year = state.year,
+                            monthlyIncomeCents = state.monthlyIncomeCents,
+                            monthlyExpenseCents = state.monthlyExpenseCents,
+                            onMonthClick = onMonthSelect
+                        )
+                    }
                 }
             }
         }
@@ -254,24 +237,13 @@ private fun YearSelector(year: Int, years: List<Int>, onYearSelect: (Int) -> Uni
             onDismissRequest = { expanded = false }
         ) {
             years.sortedDescending().forEach { option ->
+                val isSelected = option == year
                 DropdownMenuItem(
                     text = {
                         Text(
                             text = option.toString(),
-                            fontWeight = if (option ==
-                                year
-                            ) {
-                                FontWeight.SemiBold
-                            } else {
-                                FontWeight.Normal
-                            },
-                            color = if (option ==
-                                year
-                            ) {
-                                primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            }
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (isSelected) primary else MaterialTheme.colorScheme.onSurface
                         )
                     },
                     onClick = {
@@ -386,14 +358,14 @@ private fun ColumnScope.MonthlyContent(
 
         Spacer(Modifier.height(8.dp))
 
-        state.totals.forEach { item ->
-            CategoryRow(
+        state.totals.forEachIndexed { index, item ->
+            CategoryRowItem(
                 item = item,
                 onClick = {
                     onCategoryClick(item.category)
                     onSeeAllTransactions(null, item.category, state.year, state.month)
                 },
-                showDivider = state.totals.indexOf(item) < state.totals.lastIndex
+                showDivider = index < state.totals.lastIndex
             )
         }
         Spacer(Modifier.height(24.dp))
@@ -406,155 +378,6 @@ private fun ColumnScope.MonthlyContent(
         Spacer(Modifier.weight(1f))
     }
 }
-
-// ColumnScope receiver so the empty state can use weighted Spacers to center itself.
-@Composable
-private fun ColumnScope.AnnualContent(
-    state: SummaryUiState,
-    onMonthClick: (Int) -> Unit,
-    hasTransactions: Boolean
-) {
-    if (hasTransactions) {
-        Spacer(Modifier.height(32.dp))
-        AnnualSection(
-            title = "Expenses",
-            totalLabel = "Total Spent",
-            monthlyCents = state.monthlyExpenseCents,
-            onMonthClick = onMonthClick
-        )
-        Spacer(Modifier.height(48.dp))
-        AnnualSection(
-            title = "Income",
-            totalLabel = "Total Received",
-            monthlyCents = state.monthlyIncomeCents,
-            onMonthClick = onMonthClick
-        )
-        Spacer(Modifier.height(24.dp))
-    } else {
-        Spacer(Modifier.weight(1f))
-        EmptyTransactionsCard(
-            message = "No transactions for this period",
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(Modifier.weight(1f))
-    }
-}
-
-@Composable
-private fun AnnualSection(
-    title: String,
-    totalLabel: String,
-    monthlyCents: List<Long>,
-    onMonthClick: (Int) -> Unit
-) {
-    val total = monthlyCents.sum()
-    val muted = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-    val strong = MaterialTheme.colorScheme.onSurface
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = strong
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = buildAnnotatedString {
-                withStyle(SpanStyle(color = muted)) { append("$totalLabel: ") }
-                withStyle(SpanStyle(color = strong, fontWeight = FontWeight.Medium)) {
-                    append(formatPeso(total))
-                }
-            },
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Spacer(Modifier.height(24.dp))
-        MonthlyBarChart(
-            monthlyCents = monthlyCents,
-            onMonthClick = onMonthClick
-        )
-    }
-}
-
-@Composable
-private fun MonthlyBarChart(
-    monthlyCents: List<Long>,
-    onMonthClick: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    maxBarHeight: Dp = 160.dp,
-    barWidth: Dp = 18.dp
-) {
-    val maxValue = monthlyCents.maxOrNull()?.takeIf { it > 0 } ?: 1L
-    val emptyBarColor = MaterialTheme.colorScheme.surfaceVariant
-    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Bottom
-    ) {
-        MonthInitials.forEachIndexed { index, initial ->
-            val cents = monthlyCents.getOrElse(index) { 0L }
-            val month = index + 1
-            val targetHeight = if (cents <= 0L) {
-                barWidth
-            } else {
-                (maxBarHeight * (cents.toFloat() / maxValue)).coerceAtLeast(barWidth)
-            }
-            val barHeight by animateDpAsState(targetValue = targetHeight, label = "barHeight")
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable(role = Role.Button) { onMonthClick(month) }
-                    .clearAndSetSemantics {
-                        contentDescription = "${MonthNames[index]}, ${formatPeso(cents)}"
-                    }
-                    .padding(vertical = 4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = formatPeso(cents),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = labelColor,
-                    maxLines = 1,
-                    softWrap = false,
-                    modifier = Modifier.verticalText()
-                )
-                Spacer(Modifier.height(6.dp))
-                Box(
-                    modifier = Modifier
-                        .width(barWidth)
-                        .height(barHeight)
-                        .clip(RoundedCornerShape(percent = 50))
-                        .background(if (cents > 0L) primaryColor else emptyBarColor)
-                )
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    text = initial,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = labelColor
-                )
-            }
-        }
-    }
-}
-
-/**
- * Rotates text to read bottom-to-top and swaps its measured width/height
- * so it takes up the right amount of space in the layout.
- */
-private fun Modifier.verticalText(): Modifier = this
-    .layout { measurable, _ ->
-        val placeable = measurable.measure(Constraints())
-        layout(width = placeable.height, height = placeable.width) {
-            placeable.place(
-                x = -(placeable.width / 2 - placeable.height / 2),
-                y = -(placeable.height / 2 - placeable.width / 2)
-            )
-        }
-    }
-    .rotate(-90f)
 
 @Composable
 private fun SpendingDonut(
@@ -571,7 +394,7 @@ private fun SpendingDonut(
         "No spending this period"
     } else {
         totals.take(3).joinToString(prefix = "Spending by category: ") {
-            "${it.category} ${formatPeso(it.totalCents)}"
+            "${it.category.label} ${formatPeso(it.totalCents)}"
         }
     }
 
@@ -620,14 +443,11 @@ private fun SpendingDonut(
                         x = center.x + labelRadius * cos(midAngleRad),
                         y = center.y + labelRadius * sin(midAngleRad)
                     )
-                    val textColor =
-                        if (item.category.color.luminance() >
-                            0.05f
-                        ) {
-                            Color.White.copy(alpha = 0.5f)
-                        } else {
-                            Color.White
-                        }
+                    val textColor = if (item.category.color.luminance() > 0.05f) {
+                        Color.White.copy(alpha = 0.5f)
+                    } else {
+                        Color.White
+                    }
                     val layout = textMeasurer.measure(
                         text = "${(fraction * 100.0).roundToInt()}%",
                         style = labelStyle.copy(color = textColor)
@@ -647,135 +467,3 @@ private fun SpendingDonut(
         centerContent()
     }
 }
-
-@Composable
-private fun CategoryRow(item: CategoryTotal, onClick: () -> Unit, showDivider: Boolean) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(role = Role.Button, onClick = onClick)
-                .padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CategoryIconCircle(
-                icon = item.category.icon,
-                color = item.category.color
-            )
-            Spacer(Modifier.width(20.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.padding(vertical = 20.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        Text(
-                            text = item.category.displayName(),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = transactionLabel(item.transactionCount),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                        )
-                    }
-                    Text(
-                        text = formatPeso(item.totalCents),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.width(16.dp))
-                    Chevron(
-                        direction = ChevronDirection.Right,
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                        modifier = Modifier.size(width = 8.dp, height = 14.dp)
-                    )
-                }
-            }
-        }
-        if (showDivider) {
-            HorizontalDivider(
-                thickness = 0.5.dp,
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
-        }
-    }
-}
-
-private enum class ChevronDirection { Left, Right, Up, Down }
-
-@Composable
-private fun Chevron(
-    direction: ChevronDirection,
-    color: Color,
-    modifier: Modifier = Modifier,
-    strokeWidth: Dp = 2.dp
-) {
-    Canvas(modifier = modifier) {
-        val inset = strokeWidth.toPx() / 2
-        val right = size.width - inset
-        val bottom = size.height - inset
-        val midX = size.width / 2
-        val midY = size.height / 2
-
-        val points = when (direction) {
-            ChevronDirection.Left -> listOf(
-                Offset(right, inset),
-                Offset(inset, midY),
-                Offset(right, bottom)
-            )
-            ChevronDirection.Right -> listOf(
-                Offset(inset, inset),
-                Offset(right, midY),
-                Offset(inset, bottom)
-            )
-            ChevronDirection.Up -> listOf(
-                Offset(inset, bottom),
-                Offset(midX, inset),
-                Offset(right, bottom)
-            )
-            ChevronDirection.Down -> listOf(
-                Offset(inset, inset),
-                Offset(midX, bottom),
-                Offset(right, inset)
-            )
-        }
-
-        val path = Path().apply {
-            moveTo(points[0].x, points[0].y)
-            lineTo(points[1].x, points[1].y)
-            lineTo(points[2].x, points[2].y)
-        }
-
-        drawPath(
-            path = path,
-            color = color,
-            style = Stroke(
-                width = strokeWidth.toPx(),
-                cap = StrokeCap.Round,
-                join = StrokeJoin.Round
-            )
-        )
-    }
-}
-
-private fun groupThousands(value: Long): String =
-    value.toString().reversed().chunked(3).joinToString(",").reversed()
-
-private fun formatPeso(cents: Long): String {
-    val pesos = (cents + 50) / 100
-    return "₱${groupThousands(pesos)}"
-}
-
-private fun transactionLabel(count: Int): String =
-    if (count == 1) "1 Transaction" else "$count Transactions"
-
-private fun Category.displayName(): String = name.lowercase()
-    .split('_')
-    .joinToString(" ") { word -> word.replaceFirstChar { it.uppercase() } }

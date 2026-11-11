@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 enum class Category(val key: String, val label: String) {
     FOOD("food", "Food"),
     GROCERIES("groceries", "Groceries"),
-    TRANSPORT("transport", "Transport"),
+    TRANSPORTATION("transport", "Transportation"),
     BILLS("bills", "Bills"),
     EDUCATION("education", "Education"),
     SHOPPING("shopping", "Shopping"),
@@ -20,8 +20,4 @@ enum class Category(val key: String, val label: String) {
     GIFTS_DONATIONS("gifts", "Gifts and Donation"),
     UTILITIES("utilities", "Utilities"),
     OTHERS("others", "Others");
-
-    companion object {
-        fun fromStored(value: String?): Category = entries.firstOrNull { it.key == value } ?: OTHERS
-    }
 }

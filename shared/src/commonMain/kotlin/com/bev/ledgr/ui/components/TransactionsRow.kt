@@ -34,7 +34,7 @@ private data class RowCategoryStyle(val label: String, val icon: ImageVector, va
 
 private fun styleFor(transaction: Transaction): RowCategoryStyle =
     if (transaction.type == TransactionType.EXPENSE) {
-        val category = Category.fromStored(transaction.category?.key)
+        val category = transaction.category ?: Category.OTHERS
         RowCategoryStyle(category.label, category.icon, category.color)
     } else {
         RowCategoryStyle("Income", Icons.Rounded.AccountBalance, primaryColor)

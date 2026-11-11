@@ -24,7 +24,7 @@ val Category.color: Color
         when (this) {
             Category.FOOD -> foodColor
             Category.GROCERIES -> groceriesColor
-            Category.TRANSPORT -> transportColor
+            Category.TRANSPORTATION -> transportColor
             Category.SHOPPING -> shoppingColor
             Category.BILLS -> billsColor
             Category.UTILITIES -> utilitiesColor

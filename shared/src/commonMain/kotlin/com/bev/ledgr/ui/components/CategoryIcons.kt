@@ -25,7 +25,7 @@ val Category.icon: ImageVector
         when (this) {
             Category.FOOD -> Icons.Rounded.Restaurant
             Category.GROCERIES -> Icons.Rounded.LocalGroceryStore
-            Category.TRANSPORT -> Icons.Rounded.DirectionsBusFilled
+            Category.TRANSPORTATION -> Icons.Rounded.DirectionsBusFilled
             Category.SHOPPING -> Icons.Rounded.ShoppingBasket
             Category.BILLS -> Icons.Rounded.Receipt
             Category.UTILITIES -> Icons.Rounded.ElectricBolt

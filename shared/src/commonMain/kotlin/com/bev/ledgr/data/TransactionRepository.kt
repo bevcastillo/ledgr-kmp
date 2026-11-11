@@ -24,15 +24,14 @@ class TransactionRepositoryImpl(private val dao: TransactionDao) : TransactionRe
     ): Flow<List<CategoryTotal>> =
         dao.observeCategoryTotals(startMillis, endMillis, TransactionType.EXPENSE)
             .map { rows ->
-                rows.groupBy { Category.fromStored(it.category) }
-                    .map { (category, group) ->
-                        CategoryTotal(
-                            category = category,
-                            totalCents = group.sumOf { it.totalCents },
-                            transactionCount = group.sumOf { it.transactionCount }
-                        )
-                    }
-                    .sortedByDescending { it.totalCents }
+                rows.map { row ->
+                    CategoryTotal(
+                        category = Category.entries.firstOrNull() { it.name == row.category }
+                            ?: Category.OTHERS,
+                        totalCents = row.totalCents,
+                        transactionCount = row.transactionCount
+                    )
+                }
             }
 
     override fun observeTransactions(startMillis: Long, endMillis: Long): Flow<List<Transaction>> =

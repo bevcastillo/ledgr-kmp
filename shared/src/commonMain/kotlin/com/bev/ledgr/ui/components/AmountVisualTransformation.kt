@@ -13,6 +13,14 @@ fun isValidAmountInput(input: String): Boolean {
     return pattern.matches(input)
 }
 
+private fun groupThousands(value: Long): String =
+    value.toString().reversed().chunked(3).joinToString(",").reversed()
+
+fun formatPeso(cents: Long): String {
+    val pesos = (cents + 50) / 100
+    return "₱${groupThousands(pesos)}"
+}
+
 // Shows "1234567.89" as "1,234,567.89" while the field's real value stays "1234567.89"
 class AmountVisualTransformation : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {

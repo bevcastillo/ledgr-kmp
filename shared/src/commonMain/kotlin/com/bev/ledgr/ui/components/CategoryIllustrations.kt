@@ -24,7 +24,7 @@ val Category.illustrations: DrawableResource
     get() = when (this) {
         Category.FOOD -> Res.drawable.category_food_badge
         Category.GROCERIES -> Res.drawable.category_groceries_badge
-        Category.TRANSPORT -> Res.drawable.category_transport_badge
+        Category.TRANSPORTATION -> Res.drawable.category_transport_badge
         Category.SHOPPING -> Res.drawable.category_shopping_badge
         Category.BILLS -> Res.drawable.category_bills_badge
         Category.UTILITIES -> Res.drawable.category_utilities_badge

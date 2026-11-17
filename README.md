@@ -5,11 +5,16 @@ Ledgr is a household spending tracker for Android and iOS, built with Kotlin Mul
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/home.png" width="180" alt="Home screen with income and expense totals and recent transactions"/>
-  <img src="docs/screenshots/add-transaction.png" width="180" alt="Add expense screen with amount, date and category chips"/>
-  <img src="docs/screenshots/transactions.png" width="180" alt="All transactions list filtered by category"/>
-  <img src="docs/screenshots/monthly-summary.png" width="180" alt="Monthly summary with spending donut chart and category breakdown"/>
-  <img src="docs/screenshots/annual-report.png" width="180" alt="Annual report with income vs. expenses bar chart"/>
+  <img src="docs/screenshots/home.png" width="140" alt="Home screen with income and expense totals and recent transactions"/>
+  <img src="docs/screenshots/add-transaction.png" width="140" alt="Add expense screen with amount, date and category chips"/>
+  <img src="docs/screenshots/transactions.png" width="140" alt="All transactions list filtered by category"/>
+  <img src="docs/screenshots/monthly-summary.png" width="140" alt="Monthly summary with spending donut chart and category breakdown"/>
+  <img src="docs/screenshots/annual-report.png" width="140" alt="Annual report with income vs. expenses bar chart"/>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/ipad-add-expense.png" width="200" alt="Add expense screen with amount, date and category chips in iPad view"/>
+  <img src="docs/screenshots/ipad-annual-report.png" width="200" alt="Annual report with income vs. expenses bar chart in iPad view"/>
 </p>
 
 ## Features

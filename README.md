@@ -13,8 +13,8 @@ Ledgr is a household spending tracker for Android and iOS, built with Kotlin Mul
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/ipad-add-expense.png" width="800" alt="Add expense screen with amount, date and category chips in iPad view"/>
-  <img src="docs/screenshots/ipad-annual-report.png" width="800" alt="Annual report with income vs. expenses bar chart in iPad view"/>
+  <img src="docs/screenshots/ipad-add-expense.png" width="450" alt="Add expense screen with amount, date and category chips in iPad view"/>
+  <img src="docs/screenshots/ipad-annual-report.png" width="450" alt="Annual report with income vs. expenses bar chart in iPad view"/>
 </p>
 
 ## Features

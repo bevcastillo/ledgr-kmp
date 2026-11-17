@@ -227,7 +227,7 @@ fun HomeScreen(
                     Spacer(Modifier.height(16.dp))
 
                     RemainingBalanceCard(
-                        remainingBalance = formatCents(remainingBalance)
+                        remainingBalance = remainingBalance
                     )
 
                     Spacer(Modifier.height(8.dp))

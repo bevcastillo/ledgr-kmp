@@ -13,10 +13,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.bev.ledgr.ui.formatCents
 import com.bev.ledgr.ui.theme.primaryColor
 
 @Composable
-fun RemainingBalanceCard(remainingBalance: String) {
+fun RemainingBalanceCard(remainingBalance: Long) {
+    val balanceColor = if (remainingBalance < 0) {
+        MaterialTheme.colorScheme.error
+    } else {
+        primaryColor
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp)
     ) {
@@ -41,10 +48,10 @@ fun RemainingBalanceCard(remainingBalance: String) {
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = remainingBalance,
+                text = formatCents(remainingBalance),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = primaryColor
+                color = balanceColor
             )
         }
     }

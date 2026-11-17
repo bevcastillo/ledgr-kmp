@@ -177,7 +177,7 @@ fun SummaryScreen(
                             monthlyIncomeCents = state.monthlyIncomeCents,
                             monthlyExpenseCents = state.monthlyExpenseCents,
                             onMonthClick = onMonthSelect,
-                            hasExpenses = state.totals.isNotEmpty()
+                            hasExpenses = state.monthlyExpenseCents.isNotEmpty() || state.monthlyExpenseCents.isNotEmpty()
                         )
                     }
                 }

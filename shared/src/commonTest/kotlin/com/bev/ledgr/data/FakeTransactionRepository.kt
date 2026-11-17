@@ -39,7 +39,8 @@ class FakeTransactionRepository(initial: List<Transaction> = emptyList()) : Tran
         list.asSequence()
             .filter { it.type == TransactionType.EXPENSE }
             .filter { it.dateMillis in startMillis..<endMillis }
-            .groupBy { Category.fromStored(it.category) }
+            .filter { it.category != null }
+            .groupBy { it.category ?: Category.OTHERS }
             .map { (category, items) ->
                 CategoryTotal(
                     category = category,

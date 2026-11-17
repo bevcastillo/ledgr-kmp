@@ -26,15 +26,11 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.CategoryTotal
 enum class ChevronDirection { Left, Right, Up, Down }
 
 @Composable
-fun CategoryRowItem(
-    item: CategoryTotal,
-    onClick: () -> Unit, showDivider: Boolean
-) {
+fun CategoryRowItem(item: CategoryTotal, onClick: () -> Unit, showDivider: Boolean) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier

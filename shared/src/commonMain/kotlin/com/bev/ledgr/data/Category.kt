@@ -19,5 +19,5 @@ enum class Category(val key: String, val label: String) {
     HOUSING("housing", "Housing"),
     GIFTS_DONATIONS("gifts", "Gifts and Donation"),
     UTILITIES("utilities", "Utilities"),
-    OTHERS("others", "Others");
+    OTHERS("others", "Others")
 }

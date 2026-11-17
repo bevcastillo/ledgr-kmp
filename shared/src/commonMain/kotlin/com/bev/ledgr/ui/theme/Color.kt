@@ -20,3 +20,5 @@ val othersColor = Color(0xFF6B7280) // gray
 val housingColor = Color(0xFF0891B2) // cyan
 val giftsDonationsColor = Color(0xFFCA8A04) // gold
 val utilitiesColor = Color(0xFF64748B) // blue-gray
+val incomeBarColor = Color(0xFF0D9488)
+val expenseBarColor = Color(0xFF4E884D)

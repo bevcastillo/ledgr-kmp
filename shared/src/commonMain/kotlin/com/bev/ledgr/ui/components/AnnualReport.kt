@@ -3,11 +3,11 @@ package com.bev.ledgr.ui.components
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -40,15 +40,14 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.bev.ledgr.ui.theme.expenseBarColor
+import com.bev.ledgr.ui.theme.incomeBarColor
 import com.bev.ledgr.ui.theme.primaryColor
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.pow
 import kotlin.math.roundToLong
-
-private val IncomeBarColor = Color(0xFF0D9488)
-private val ExpenseBarColor = Color(0xFF4E884D)
 
 private val BarShape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
 
@@ -59,12 +58,12 @@ private val NiceStepMultipliers = listOf(1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0,
 
 private val ReportMonthLabels = listOf(
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 )
 
 private val ReportMonthNames = listOf(
     "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "July", "August", "September", "October", "November", "December"
 )
 
 /**
@@ -78,12 +77,13 @@ private val ReportMonthNames = listOf(
  * [onMonthClick] receives the 1-based month number of the tapped column.
  */
 @Composable
-fun AnnualReport(
+fun ColumnScope.AnnualReport(
     year: Int,
     monthlyIncomeCents: List<Long>,
     monthlyExpenseCents: List<Long>,
     onMonthClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    hasExpenses: Boolean
 ) {
     val monthCount = reportedMonthCount(monthlyIncomeCents, monthlyExpenseCents)
     val income = List(monthCount) { monthlyIncomeCents.getOrElse(it) { 0L } }
@@ -99,54 +99,59 @@ fun AnnualReport(
         "${ReportMonthLabels[0]}–${ReportMonthLabels[monthCount - 1]}"
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 16.dp),
-    ) {
+    if (hasExpenses) {
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(vertical = 16.dp)
         ) {
-            Text(
-                text = "$year overview, $range",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.height(16.dp))
-            StatsGrid(
-                totalIncome = totalIncome,
-                totalExpenses = totalExpenses,
-                balance = balance,
-            )
-            Spacer(Modifier.height(20.dp))
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Spacer(Modifier.height(20.dp))
-            Text(
-                text = "Income vs. expenses",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Spacer(Modifier.height(16.dp))
-            IncomeExpenseChart(
-                income = income,
-                expenses = expenses,
-                onMonthClick = onMonthClick,
-            )
-            Spacer(Modifier.height(12.dp))
-            Legend()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "$year overview, $range",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(16.dp))
+                StatsGrid(
+                    totalIncome = totalIncome,
+                    totalExpenses = totalExpenses,
+                    balance = balance
+                )
+                Spacer(Modifier.height(20.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                Spacer(Modifier.height(20.dp))
+                Text(
+                    text = "Income vs. expenses",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(Modifier.height(16.dp))
+                IncomeExpenseChart(
+                    income = income,
+                    expenses = expenses,
+                    onMonthClick = onMonthClick
+                )
+                Spacer(Modifier.height(12.dp))
+                Legend()
+            }
         }
+    } else {
+        Spacer(Modifier.weight(1f))
+        EmptyTransactionsCard(
+            message = "No expenses for this period",
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.weight(1f))
     }
 }
 
 @Composable
-private fun StatsGrid(
-    totalIncome: Long,
-    totalExpenses: Long,
-    balance: Long,
-) {
+private fun StatsGrid(totalIncome: Long, totalExpenses: Long, balance: Long) {
     val balanceColor = if (balance < 0) {
         MaterialTheme.colorScheme.error
     } else {
@@ -164,13 +169,13 @@ private fun StatsGrid(
                 label = "Total income",
                 value = formatPesoCompact(totalIncome),
                 valueColor = primaryColor,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
             )
             Stat(
                 label = "Total expenses",
                 value = formatPesoCompact(totalExpenses),
                 valueColor = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
             )
         }
         Row(Modifier.fillMaxWidth()) {
@@ -178,40 +183,35 @@ private fun StatsGrid(
                 label = "Remaining balance",
                 value = formatPesoCompact(balance),
                 valueColor = balanceColor,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
             )
             Stat(
                 label = "Income remaining",
                 value = remaining,
                 valueColor = balanceColor,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
             )
         }
     }
 }
 
 @Composable
-private fun Stat(
-    label: String,
-    value: String,
-    valueColor: Color,
-    modifier: Modifier = Modifier,
-) {
+private fun Stat(label: String, value: String, valueColor: Color, modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier.clearAndSetSemantics { contentDescription = "$label: $value" },
+        modifier = modifier.clearAndSetSemantics { contentDescription = "$label: $value" }
     ) {
         Text(
             text = value,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.SemiBold,
             color = valueColor,
-            maxLines = 1,
+            maxLines = 1
         )
         Spacer(Modifier.height(2.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
         )
     }
 }
@@ -221,7 +221,7 @@ private fun IncomeExpenseChart(
     income: List<Long>,
     expenses: List<Long>,
     onMonthClick: (Int) -> Unit,
-    chartHeight: Dp = 200.dp,
+    chartHeight: Dp = 200.dp
 ) {
     val maxCents = maxOf(income.maxOrNull() ?: 0L, expenses.maxOrNull() ?: 0L)
     val axisMaxCents = niceAxisMax(maxCents)
@@ -232,7 +232,7 @@ private fun IncomeExpenseChart(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 8.dp),
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = Alignment.Top
     ) {
         YAxisLabels(ticks = ticks, height = chartHeight)
         Spacer(Modifier.width(8.dp))
@@ -243,7 +243,7 @@ private fun IncomeExpenseChart(
                     // Gridlines cover only the plot area, not the month labels below it
                     val plotHeight = chartHeight.toPx()
                     val dash = PathEffect.dashPathEffect(
-                        floatArrayOf(4.dp.toPx(), 4.dp.toPx()),
+                        floatArrayOf(4.dp.toPx(), 4.dp.toPx())
                     )
                     for (step in 0..AXIS_STEPS) {
                         val y = plotHeight - plotHeight * step / AXIS_STEPS
@@ -252,10 +252,10 @@ private fun IncomeExpenseChart(
                             start = Offset(0f, y),
                             end = Offset(size.width, y),
                             strokeWidth = 1.dp.toPx(),
-                            pathEffect = if (step == 0) null else dash,
+                            pathEffect = if (step == 0) null else dash
                         )
                     }
-                },
+                }
         ) {
             income.indices.forEach { index ->
                 MonthColumn(
@@ -265,7 +265,7 @@ private fun IncomeExpenseChart(
                     axisMaxCents = axisMaxCents,
                     chartHeight = chartHeight,
                     onClick = { onMonthClick(index + 1) },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -273,10 +273,7 @@ private fun IncomeExpenseChart(
 }
 
 @Composable
-private fun YAxisLabels(
-    ticks: List<Long>,
-    height: Dp,
-) {
+private fun YAxisLabels(ticks: List<Long>, height: Dp) {
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
     val labelStyle = MaterialTheme.typography.labelSmall
 
@@ -288,13 +285,13 @@ private fun YAxisLabels(
                     text = formatPesoCompact(tick),
                     style = labelStyle,
                     color = labelColor,
-                    maxLines = 1,
+                    maxLines = 1
                 )
             }
         },
         modifier = Modifier
             .height(height)
-            .clearAndSetSemantics { },
+            .clearAndSetSemantics { }
     ) { measurables, constraints ->
         val placeables = measurables.map {
             it.measure(constraints.copy(minWidth = 0, minHeight = 0))
@@ -308,7 +305,7 @@ private fun YAxisLabels(
                 val lineY = plotHeight - plotHeight * index / lastIndex
                 placeable.place(
                     x = width - placeable.width,
-                    y = lineY - placeable.height / 2,
+                    y = lineY - placeable.height / 2
                 )
             }
         }
@@ -323,10 +320,10 @@ private fun MonthColumn(
     axisMaxCents: Long,
     chartHeight: Dp,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val description = "${ReportMonthNames[index]}: income ${formatPesoWhole(incomeCents)}, " +
-            "expenses ${formatPesoWhole(expenseCents)}"
+        "expenses ${formatPesoWhole(expenseCents)}"
 
     Column(
         modifier = modifier
@@ -339,7 +336,7 @@ private fun MonthColumn(
                 }
             }
             .clickable(onClick = onClick),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(
             modifier = Modifier
@@ -347,17 +344,17 @@ private fun MonthColumn(
                 .height(chartHeight)
                 .padding(horizontal = 3.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.Bottom
         ) {
             AnimatedBar(
                 fraction = barFraction(incomeCents, axisMaxCents),
-                color = IncomeBarColor,
-                modifier = Modifier.weight(1f),
+                color = incomeBarColor,
+                modifier = Modifier.weight(1f)
             )
             AnimatedBar(
                 fraction = barFraction(expenseCents, axisMaxCents),
-                color = ExpenseBarColor,
-                modifier = Modifier.weight(1f),
+                color = expenseBarColor,
+                modifier = Modifier.weight(1f)
             )
         }
         Spacer(Modifier.height(6.dp))
@@ -365,17 +362,13 @@ private fun MonthColumn(
             text = ReportMonthLabels[index],
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
+            maxLines = 1
         )
     }
 }
 
 @Composable
-private fun AnimatedBar(
-    fraction: Float,
-    color: Color,
-    modifier: Modifier = Modifier,
-) {
+private fun AnimatedBar(fraction: Float, color: Color, modifier: Modifier = Modifier) {
     val animated = remember { Animatable(0f) }
     LaunchedEffect(fraction) {
         animated.animateTo(fraction, tween(durationMillis = BAR_ANIMATION_MILLIS))
@@ -384,7 +377,7 @@ private fun AnimatedBar(
         modifier = modifier
             .fillMaxHeight(animated.value)
             .clip(BarShape)
-            .background(color),
+            .background(color)
     )
 }
 
@@ -393,39 +386,33 @@ private fun Legend() {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        LegendItem(label = "Income", color = IncomeBarColor)
+        LegendItem(label = "Income", color = incomeBarColor)
         Spacer(Modifier.width(20.dp))
-        LegendItem(label = "Expenses", color = ExpenseBarColor)
+        LegendItem(label = "Expenses", color = expenseBarColor)
     }
 }
 
 @Composable
-private fun LegendItem(
-    label: String,
-    color: Color,
-) {
+private fun LegendItem(label: String, color: Color) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier
                 .size(10.dp)
                 .clip(CircleShape)
-                .background(color),
+                .background(color)
         )
         Spacer(Modifier.width(6.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
 
-private fun reportedMonthCount(
-    income: List<Long>,
-    expenses: List<Long>,
-): Int {
+private fun reportedMonthCount(income: List<Long>, expenses: List<Long>): Int {
     val months = maxOf(income.size, expenses.size).coerceIn(1, 12)
     val lastWithData = (months - 1 downTo 0).firstOrNull { i ->
         income.getOrElse(i) { 0L } != 0L || expenses.getOrElse(i) { 0L } != 0L
@@ -433,10 +420,8 @@ private fun reportedMonthCount(
     return (lastWithData ?: (months - 1)) + 1
 }
 
-private fun barFraction(
-    cents: Long,
-    axisMaxCents: Long,
-): Float = (cents.coerceAtLeast(0L).toFloat() / axisMaxCents).coerceIn(0f, 1f)
+private fun barFraction(cents: Long, axisMaxCents: Long): Float =
+    (cents.coerceAtLeast(0L).toFloat() / axisMaxCents).coerceIn(0f, 1f)
 
 // Rounds the axis top up to a readable step, e.g. a ₱190K max gives 0/50K/100K/150K/200K
 private fun niceAxisMax(maxCents: Long): Long {
@@ -475,10 +460,7 @@ private fun formatPercent(value: Double): String {
 }
 
 // Common code has no String.format, so decimals are built by hand
-private fun formatDecimal(
-    value: Double,
-    decimals: Int,
-): String {
+private fun formatDecimal(value: Double, decimals: Int): String {
     val factor = 10.0.pow(decimals).toLong()
     val scaled = (value * factor).roundToLong()
     val whole = scaled / factor

@@ -26,7 +26,7 @@ class TransactionRepositoryImpl(private val dao: TransactionDao) : TransactionRe
             .map { rows ->
                 rows.map { row ->
                     CategoryTotal(
-                        category = Category.entries.firstOrNull() { it.name == row.category }
+                        category = Category.entries.firstOrNull { it.name == row.category }
                             ?: Category.OTHERS,
                         totalCents = row.totalCents,
                         transactionCount = row.transactionCount

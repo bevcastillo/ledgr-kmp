@@ -46,22 +46,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bev.ledgr.data.Category
 import com.bev.ledgr.data.CategoryTotal
 import com.bev.ledgr.data.TransactionType
 import com.bev.ledgr.ui.components.AnnualReport
-import com.bev.ledgr.ui.components.CategoryRowItem
 import com.bev.ledgr.ui.components.Chevron
 import com.bev.ledgr.ui.components.ChevronDirection
 import com.bev.ledgr.ui.components.EmptyTransactionsCard
@@ -71,12 +66,6 @@ import com.bev.ledgr.ui.components.formatPeso
 import com.bev.ledgr.ui.theme.primaryColor
 import com.bev.ledgr.ui.theme.primaryDark
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.roundToInt
-import kotlin.math.sin
-
-private const val MIN_LABEL_FRACTION = 0.05f
 
 private val AllMonths = (1..12).toList()
 
@@ -187,7 +176,8 @@ fun SummaryScreen(
                             year = state.year,
                             monthlyIncomeCents = state.monthlyIncomeCents,
                             monthlyExpenseCents = state.monthlyExpenseCents,
-                            onMonthClick = onMonthSelect
+                            onMonthClick = onMonthSelect,
+                            hasExpenses = state.totals.isNotEmpty()
                         )
                     }
                 }
@@ -315,7 +305,7 @@ private fun ColumnScope.MonthlyContent(
     onCategoryClick: (Category) -> Unit,
     hasExpenses: Boolean
 ) {
-    Spacer(Modifier.height(24.dp))
+    Spacer(Modifier.height(16.dp))
     MonthSelector(
         selectedMonth = state.month,
         availableMonths = AllMonths,
@@ -323,7 +313,7 @@ private fun ColumnScope.MonthlyContent(
     )
 
     if (hasExpenses) {
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(24.dp))
         SpendingDonut(
             totals = state.totals,
             // Cap the base width so the donut doesn't fill the whole screen in landscape.
@@ -346,7 +336,7 @@ private fun ColumnScope.MonthlyContent(
             }
         }
 
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(8.dp))
         Box(modifier = Modifier.fillMaxWidth()) {
             TextButton(
                 onClick = { onSeeAllTransactions(null, null, state.year, state.month) },
@@ -358,14 +348,14 @@ private fun ColumnScope.MonthlyContent(
 
         Spacer(Modifier.height(8.dp))
 
-        state.totals.forEachIndexed { index, item ->
-            CategoryRowItem(
+        state.totals.forEach { item ->
+            CategoryProgressRow(
                 item = item,
+                grandTotalCents = state.grandTotalCents,
                 onClick = {
                     onCategoryClick(item.category)
                     onSeeAllTransactions(null, item.category, state.year, state.month)
-                },
-                showDivider = index < state.totals.lastIndex
+                }
             )
         }
         Spacer(Modifier.height(24.dp))
@@ -386,8 +376,6 @@ private fun SpendingDonut(
     centerContent: @Composable () -> Unit
 ) {
     val trackColor = MaterialTheme.colorScheme.surfaceVariant
-    val textMeasurer = rememberTextMeasurer()
-    val labelStyle = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
     val grandTotal = totals.sumOf { it.totalCents }.toFloat()
 
     val description = if (totals.isEmpty()) {
@@ -408,7 +396,6 @@ private fun SpendingDonut(
             val stroke = size.minDimension * 0.26f
             val arcSize = Size(size.width - stroke, size.height - stroke)
             val topLeft = Offset(stroke / 2, stroke / 2)
-            val labelRadius = (size.minDimension - stroke) / 2f
 
             if (grandTotal <= 0f) {
                 drawArc(
@@ -425,7 +412,6 @@ private fun SpendingDonut(
 
             var startAngle = -90f
             totals.forEach { item ->
-                val fraction = item.totalCents / grandTotal
                 val sweep = 360f * item.totalCents / grandTotal
                 drawArc(
                     color = item.category.color,
@@ -436,31 +422,6 @@ private fun SpendingDonut(
                     size = arcSize,
                     style = Stroke(width = stroke)
                 )
-
-                if (fraction >= MIN_LABEL_FRACTION) {
-                    val midAngleRad = (startAngle + sweep / 2f) * (PI.toFloat() / 180f)
-                    val labelCenter = Offset(
-                        x = center.x + labelRadius * cos(midAngleRad),
-                        y = center.y + labelRadius * sin(midAngleRad)
-                    )
-                    val textColor = if (item.category.color.luminance() > 0.05f) {
-                        Color.White.copy(alpha = 0.5f)
-                    } else {
-                        Color.White
-                    }
-                    val layout = textMeasurer.measure(
-                        text = "${(fraction * 100.0).roundToInt()}%",
-                        style = labelStyle.copy(color = textColor)
-                    )
-                    drawText(
-                        textLayoutResult = layout,
-                        topLeft = Offset(
-                            x = labelCenter.x - layout.size.width / 2f,
-                            y = labelCenter.y - layout.size.height / 2f
-                        )
-                    )
-                }
-
                 startAngle += sweep
             }
         }
